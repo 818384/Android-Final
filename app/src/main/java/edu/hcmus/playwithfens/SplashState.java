@@ -30,7 +30,7 @@ public class SplashState extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(SplashState.this, MainActivity.class);
+                Intent intent = new Intent(SplashState.this, MenuState.class);
                 startActivity(intent);
                 finish();
             }
