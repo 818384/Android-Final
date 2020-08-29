@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name = "p2pChat"
+rootProject.name = "Play With Fens"

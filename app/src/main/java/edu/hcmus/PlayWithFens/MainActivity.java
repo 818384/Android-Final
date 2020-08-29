@@ -1,4 +1,4 @@
-package edu.hcmus.p2pchat;
+package edu.hcmus.playwithfens;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
