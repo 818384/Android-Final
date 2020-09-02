@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
     <Button
         android:id="@+id/onOff"
         android:layout_width="wrap_content"
@@ -23,6 +24,13 @@
         android:layout_alignBottom="@id/onOff"
         android:layout_centerHorizontal="true"
         android:text="discovery"/>
+    <TextView
+        android:id="@+id/txtTouch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/discover"
+        android:layout_alignBottom="@id/discover"
+        android:text="touch"/>
 
     <ListView
         android:id="@+id/peerListView"

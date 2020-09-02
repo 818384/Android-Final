@@ -2,15 +2,21 @@ package edu.hcmus.playwithfens;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.InetAddresses;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
@@ -21,6 +27,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
 
@@ -62,16 +69,43 @@ public class MainActivity extends Activity {
     private ClientClass clientClass;
     private SendReceive sendReceive;
 
+    private GameView gameView;
+
     TextView getConnectionStatus() {
         return connectionStatus;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initialWork();
-        exqListener();
+//        initialWork();
+//        exqListener();
+        gameView = new GameView(this, this);
+        setContentView(gameView);
+
     }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        //gameView.pauseMusicPlayer();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        //gameView.startMusicPlayer();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        //gameView.stopMusicPlayer();
+        //gameView.releaseMusicPlayer();
+    }
+
+
 
     Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -175,6 +209,7 @@ public class MainActivity extends Activity {
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
         writeMsg = (EditText) findViewById(R.id.writeMsg);
 
+
         btnOnOff.setEnabled(false);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -238,18 +273,18 @@ public class MainActivity extends Activity {
         }
     };
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-        registerReceiver(mReceiver, mIntentFilter);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mReceiver);
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
+//        registerReceiver(mReceiver, mIntentFilter);
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        unregisterReceiver(mReceiver);
+//    }
 
     public class ServerClass extends Thread {
         private Socket socket;

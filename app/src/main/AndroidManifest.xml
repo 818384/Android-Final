@@ -23,21 +23,11 @@
             android:configChanges="orientation"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait">
-        </activity>
-        <activity android:name=".SplashState"
-            android:configChanges="orientation"
-            android:launchMode="singleInstance"
-            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".MenuState"
-            android:configChanges="orientation"
-            android:launchMode="singleInstance"
-            android:screenOrientation="portrait">
         </activity>
     </application>
 
