@@ -8,8 +8,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,11 +25,17 @@ public class SplashState {
     private GameView gameView;
     Bitmap bmLogo;
     Bitmap bmTitile;
+    Bitmap btnStart;
     private Paint welcomeMessage = new Paint();
+    private Sprite logo;
 
-    public SplashState(GameView gameView){
-        bmLogo = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.splash_logo);
-        Bitmap bmTitile = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.titile_splash_state);
+    public SplashState(GameView gameView)
+    {
+        BitmapFactory.Options option = new BitmapFactory.Options();
+        option.inMutable = true;
+        bmLogo = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.splash_logo, option);
+        bmTitile = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.titile_splash_state);
+        btnStart = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.btn_start, option);
 
         Typeface typeface = Typeface.create("Helvetica",Typeface.BOLD);
         this.gameView = gameView;
@@ -41,29 +49,32 @@ public class SplashState {
 
     @SuppressLint("WrongCall")
     public void draw(Canvas canvas){
-        canvas.drawText("Android Space Invader",x,y,welcomeMessage);
-        canvas.drawText("Tap to start...",x, (int) (5.5 * y) ,welcomeMessage);
 
+        int width = bmLogo.getWidth();
+        int height = bmLogo.getHeight();
+        float left = (gameView.getWidth() - bmLogo.getWidth()) / 2.0f;
+        float top = (gameView.getHeight() - bmLogo.getHeight()) / 2.0f;
+        RectF dst = new RectF(left, top, left + bmLogo.getWidth(), top + bmLogo.getHeight());
+        canvas.drawBitmap(bmLogo, null, dst, null);
 
+        float leftbtn = (gameView.getWidth() - bmTitile.getWidth()) / 2.0f;
+        float topbtn = (gameView.getHeight() - bmTitile.getHeight());
+        RectF dstBtnStart = new RectF(leftbtn, topbtn, leftbtn + bmTitile.getWidth(), topbtn + bmTitile.getHeight());
+        canvas.drawBitmap(bmTitile, null, dstBtnStart, null);
 
-        int width = bmLogo.getWidth() / 2;
-        int height = bmLogo.getHeight() / 2;
-        int srcX = 0 * width;
-        int srcY = 0 * height;
-
-        Rect src = new Rect(srcX, srcY, srcX + width, srcY + height);
-        Rect dst = new Rect(30, 30, 30 + width, 30 + height);
-
-        src.left=srcX;
-        src.top = srcY;
-        src.right = srcX + width;
-        src.bottom = srcY + height;
-        dst.left=30;
-        dst.top=30;
-        dst.right=30+width;
-        dst.bottom=30+height;
-        canvas.drawBitmap(bmLogo, src, dst, null);
     }
+
+//    private boolean inBounds(MotionEvent event, int x, int y, int width, int height)
+//    {
+//        if (event.getAction() == MotionEvent.ACTION_POINTER_UP){
+//
+//        }
+//        if(event.x > x && event.x < x + width - 1 &&
+//                event.y > y && event.y < y + height - 1)
+//            return true;
+//        else
+//            return false;
+//    }
 
 
 //    private void initWork() {

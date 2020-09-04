@@ -1,6 +1,7 @@
 package edu.hcmus.playwithfens;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -13,14 +14,19 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.io.IOException;
+
 public class GameView extends SurfaceView {
     private MainActivity activity;
     private Context context;
     private GameLoopThread gameLoopThread;
     private boolean firstStart = true;
     private int gameState = 1; // 1 Splash State, 2 Play.
+    private int delay = 0;
+    private MotionEvent eventGameView;
 
-    SplashState splashState;
+    private SplashState splashState;
+    private GamePlayState gamePlayState;
 
     public GameView(Context context, MainActivity activity)
     {
@@ -40,7 +46,9 @@ public class GameView extends SurfaceView {
                     try {
                         gameLoopThread.join();
                         retry = false;
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -63,9 +71,43 @@ public class GameView extends SurfaceView {
     {
         return gameLoopThread;
     }
+    public Activity getGameViewAcivity(){
+        return this.activity;
+    }
+    public Context getGameViewContext(){
+        return this.context;
+    }
 
-    private void createScreens(){
-        this.splashState = new SplashState(this);
+    private void createScreens()
+    {
+        if (gameState == 1){
+            this.splashState = new SplashState(this);
+        }
+
+        this.gamePlayState = new GamePlayState(this);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+
+            synchronized (getHolder()) {
+
+                switch(gameState){
+
+                    case 1://Welcome Screen
+                        gameState = 2;
+
+                        break;
+                    case 2:// Play game
+                        eventGameView = event;
+                        break;
+                    default:
+                        gameState = 1;
+                        break;
+                }
+            }
+        return true;
     }
 
     @SuppressLint("WrongCall")
@@ -76,8 +118,22 @@ public class GameView extends SurfaceView {
         switch (gameState){
             case 1: //Splash State
                 splashState.draw(canvas);
+                // tap to start.
+
+                try{
+                    Thread.sleep(1000);
+                    delay++;
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+                if (delay == 2){
+                    gameState = 2;
+                }
                 break;
             case 2: //Play game
+                gamePlayState.draw(canvas);
+                gamePlayState.update(eventGameView, canvas);
+
                 break;
             default:
                 gameState = 1;
