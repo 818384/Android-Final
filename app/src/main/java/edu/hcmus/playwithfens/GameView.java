@@ -24,6 +24,8 @@ public class GameView extends SurfaceView {
     private int gameState = 1; // 1 Splash State, 2 Play.
     private int delay = 0;
     private MotionEvent eventGameView;
+    private float x;
+    private float y;
 
     private SplashState splashState;
     private GamePlayState gamePlayState;
@@ -100,7 +102,10 @@ public class GameView extends SurfaceView {
 
                         break;
                     case 2:// Play game
-                        eventGameView = event;
+                        if (event.getAction() == MotionEvent.ACTION_UP){
+                            x = event.getX();
+                            y = event.getY();
+                        }
                         break;
                     default:
                         gameState = 1;
@@ -132,7 +137,7 @@ public class GameView extends SurfaceView {
                 break;
             case 2: //Play game
                 gamePlayState.draw(canvas);
-                gamePlayState.update(eventGameView, canvas);
+                gamePlayState.update(x, y-=50, canvas);
 
                 break;
             default:

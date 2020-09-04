@@ -30,10 +30,10 @@ public class GamePlayState {
     }
 
     @SuppressLint("WrongCall")
-    public void update(MotionEvent event, Canvas canvas){
+    public void update(float x, float y, Canvas canvas){
         System.out.println("update");
-        onTouchEvent(event, canvas);
-
+        //onTouchEvent(event, canvas);
+        drawRocket(x, y, canvas);
     }
 
     @SuppressLint("WrongCall")
@@ -45,18 +45,22 @@ public class GamePlayState {
     }
 
     public void drawRocket(float x, float y, Canvas canvas){
-        float left = (x - rocket.getWidth() / 2.0f);
-        float top = (y - rocket.getHeight() / 2.0f);
-        RectF dst = new RectF(left, top, left + rocket.getWidth(), top + rocket.getHeight());
-        canvas.drawBitmap(rocket, null, dst, null);
-        while (y >= rocket.getHeight()){
-
-            left = (x - rocket.getWidth() / 2.0f);
-            top = (y - rocket.getHeight() / 2.0f);
-            dst = new RectF(left, top, left + rocket.getWidth(), top + rocket.getHeight());
+        if (y > 0){
+            float left = (x - rocket.getWidth() / 2.0f);
+            float top = (y - rocket.getHeight() / 2.0f);
+            RectF dst = new RectF(left, top, left + rocket.getWidth(), top + rocket.getHeight());
             canvas.drawBitmap(rocket, null, dst, null);
-            y--;
         }
+
+//        while (y >= rocket.getHeight()){
+//
+//            left = (x - rocket.getWidth() / 2.0f);
+//            top = (y - rocket.getHeight() / 2.0f);
+//            System.out.println("left: " + left + "--top: " + top);
+//            dst = new RectF(left, top, left + rocket.getWidth(), top + rocket.getHeight());
+//            canvas.drawBitmap(rocket, null, dst, null);
+//            y--;
+//        }
 
     }
     public boolean onTouchEvent(MotionEvent event, Canvas canvas) {
