@@ -15,11 +15,14 @@ public class GamePlayState {
     private GameObject rocket;
     private Bitmap rocketBitmap;
     private ViewGroup.LayoutParams myLayout;
-    private float x;
-    private float y;
+    private int widthScreen;
+    private int heightScreen;
+    private float YDes = 0.0f;
 
     public GamePlayState(GameView gameView) {
         this.gameView = gameView;
+        this.widthScreen = gameView.getWidth();
+        this.heightScreen = gameView.getHeight();
         BitmapFactory.Options option = new BitmapFactory.Options();
         option.inMutable = true;
         background = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.background, option);
@@ -34,7 +37,24 @@ public class GamePlayState {
     public void update(float x, float y, Canvas canvas) {
         System.out.println("update");
         //onTouchEvent(event, canvas);
-        drawRocket(x, y, canvas);
+
+        if (rocket.isLive()){
+            if (YDes == 0.0f && y != 0.0f){
+                YDes = y;
+                YDes = getYOfPointSymmetry(YDes);
+                System.out.println(YDes);
+            }
+            if (y >= YDes){
+                drawRocket(x, y, canvas);
+            }
+            else {
+                YDes = 0.0f;
+            }
+        }
+        else {
+            YDes = 0.0f;
+        }
+
     }
 
     @SuppressLint("WrongCall")
@@ -44,13 +64,16 @@ public class GamePlayState {
 
     }
 
-    public void drawRocket(float x, float y, Canvas canvas) {
-        if (y > 0) {
-            float left = (x - rocket.getBitmap().getWidth() / 2.0f);
-            float top = (y - rocket.getBitmap().getHeight() / 2.0f);
-            RectF dst = new RectF(left, top, left + rocket.getBitmap().getWidth(), top + rocket.getBitmap().getHeight());
-            canvas.drawBitmap(rocket.getBitmap(), null, dst, null);
-        }
+    private float getYOfPointSymmetry(float y){
+        return (heightScreen / 2.0f) - ((heightScreen / 2.0f) - (heightScreen - y));
+    }
+
+    public void drawRocket(float x, float y, Canvas canvas)
+    {
+        float left = (x - rocket.getBitmap().getWidth() / 2.0f);
+        float top = (y - rocket.getBitmap().getHeight() / 2.0f);
+        RectF dst = new RectF(left, top, left + rocket.getBitmap().getWidth(), top + rocket.getBitmap().getHeight());
+        canvas.drawBitmap(rocket.getBitmap(), null, dst, null);
 
 //        while (y >= rocket.getImgSource().getHeight()){
 //
@@ -64,19 +87,19 @@ public class GamePlayState {
 
     }
 
-    public boolean onTouchEvent(MotionEvent event, Canvas canvas) {
-        if (event != null) {
-            x = event.getX();
-            y = event.getY();
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_UP:
-                    System.out.println("x: " + x + "-y: " + y);
-                    drawRocket(x, y, canvas);
-                    break;
-            }
-            return false;
-        }
-        return false;
-    }
+//    public boolean onTouchEvent(MotionEvent event, Canvas canvas) {
+//        if (event != null) {
+//            x = event.getX();
+//            y = event.getY();
+//            switch (event.getAction()) {
+//                case MotionEvent.ACTION_UP:
+//                    System.out.println("x: " + x + "-y: " + y);
+//                    drawRocket(x, y, canvas);
+//                    break;
+//            }
+//            return false;
+//        }
+//        return false;
+//    }
 
 }

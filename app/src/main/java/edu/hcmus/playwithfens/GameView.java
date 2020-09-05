@@ -130,7 +130,9 @@ public class GameView extends SurfaceView {
                 break;
             case 2: //Play game
                 gamePlayState.draw(canvas);
-                gamePlayState.update(x, y -= 50, canvas);
+                gamePlayState.update(x, y, canvas);
+                if (y != 0.0f)
+                    y -= 50;
 
                 break;
             default:

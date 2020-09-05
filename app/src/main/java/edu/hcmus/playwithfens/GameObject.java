@@ -3,9 +3,10 @@ package edu.hcmus.playwithfens;
 import android.graphics.Bitmap;
 
 public class GameObject {
-    int x = 0;
-    int y = 0;
-    Bitmap bitmap;
+    private int x = 0;
+    private int y = 0;
+    private boolean isLive = true;
+    private Bitmap bitmap;
 
     public GameObject(int x, int y, Bitmap bitmap) {
         this.x = x;
@@ -31,6 +32,14 @@ public class GameObject {
 
     public void setY(int y) {
         this.y = y;
+    }
+
+    public boolean isLive() {
+        return isLive;
+    }
+
+    public void setLive(boolean live) {
+        isLive = live;
     }
 
     public Bitmap getBitmap() {
