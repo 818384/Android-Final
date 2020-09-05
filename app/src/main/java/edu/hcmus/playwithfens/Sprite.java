@@ -51,6 +51,7 @@ public class Sprite {
     public int getBmpRows() {
         return this.bmpRows;
     }
+
     public int getBmpColumns() {
         return this.bmpColumns;
     }
@@ -58,6 +59,7 @@ public class Sprite {
     public int getX() {
         return x;
     }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -65,6 +67,7 @@ public class Sprite {
     public int getY() {
         return y;
     }
+
     public void setY(int y) {
         this.y = y;
     }
@@ -72,6 +75,7 @@ public class Sprite {
     public int getWidth() {
         return width;
     }
+
     public void setWidth(int width) {
         this.width = width;
     }
@@ -79,13 +83,15 @@ public class Sprite {
     public int getHeight() {
         return height;
     }
+
     public void setHeight(int height) {
-        this.height=height;
+        this.height = height;
     }
 
     public boolean isAlive() {
         return alive;
     }
+
     public void setAlive(boolean alive) {
         this.alive = alive;
     }
@@ -110,14 +116,14 @@ public class Sprite {
         //src = new Rect(srcX, srcY, srcX + width, srcY + height);
         //Rect dst = new Rect(x, y, x + width, y + height);
 
-        src.left=srcX;
+        src.left = srcX;
         src.top = srcY;
         src.right = srcX + width;
         src.bottom = srcY + height;
-        dst.left=x;
-        dst.top=y;
-        dst.right=x+width;
-        dst.bottom=y+height;
+        dst.left = x;
+        dst.top = y;
+        dst.right = x + width;
+        dst.bottom = y + height;
 
         canvas.drawBitmap(bmp, src, dst, null);
     }
@@ -136,16 +142,14 @@ public class Sprite {
 
     public boolean isCollition(Sprite sprite2) {
         // Detects collision between two rectangles (sprites)
-        if(
+        if (
                 this.x < sprite2.getX() + sprite2.getWidth() &&
                         this.x + this.width > sprite2.getX() &&
                         this.y + this.height > sprite2.getY() &&
                         this.y < sprite2.getY() + sprite2.getHeight()
-        )
-        {
+        ) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

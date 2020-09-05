@@ -1,19 +1,13 @@
 package edu.hcmus.playwithfens;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.os.Handler;
-import android.view.MotionEvent;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 
 public class SplashState {
@@ -29,26 +23,25 @@ public class SplashState {
     private Paint welcomeMessage = new Paint();
     private Sprite logo;
 
-    public SplashState(GameView gameView)
-    {
+    public SplashState(GameView gameView) {
         BitmapFactory.Options option = new BitmapFactory.Options();
         option.inMutable = true;
         bmLogo = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.splash_logo, option);
         bmTitile = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.titile_splash_state);
         btnStart = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.btn_start, option);
 
-        Typeface typeface = Typeface.create("Helvetica",Typeface.BOLD);
+        Typeface typeface = Typeface.create("Helvetica", Typeface.BOLD);
         this.gameView = gameView;
         welcomeMessage.setTypeface(typeface);
         welcomeMessage.setColor(Color.WHITE);
         welcomeMessage.setTextSize(60);
         welcomeMessage.setTextAlign(Paint.Align.CENTER);
-        x = gameView.getWidth()/2;
-        y = gameView.getHeight()/6;
+        x = gameView.getWidth() / 2;
+        y = gameView.getHeight() / 6;
     }
 
     @SuppressLint("WrongCall")
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas) {
 
         int width = bmLogo.getWidth();
         int height = bmLogo.getHeight();

@@ -13,10 +13,12 @@ public class GameLoopThread extends Thread {
     public GameLoopThread(GameView view) {
         this.view = view;
     }
+
     public void setRunning(boolean run) {
         running = run;
     }
-    public boolean isRunning(){
+
+    public boolean isRunning() {
         return running;
     }
 
@@ -35,13 +37,13 @@ public class GameLoopThread extends Thread {
                 synchronized (view.getHolder()) {
                     view.onDraw(c);
                 }
-            }
-            finally {
+            } finally {
                 if (c != null) {
                     view.getHolder().unlockCanvasAndPost(c);
                 }
             }
 
+/*
             sleepTime = ticksPS - (System.currentTimeMillis() - startTime);
 
             try {
@@ -51,6 +53,7 @@ public class GameLoopThread extends Thread {
                     sleep(10);
             }
             catch (Exception e) {}
+*/
         }
     }
 

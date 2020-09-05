@@ -1,23 +1,11 @@
 package edu.hcmus.playwithfens;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.net.InetAddresses;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -27,9 +15,17 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,30 +83,29 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         //gameView.pauseMusicPlayer();
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         //gameView.startMusicPlayer();
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         //gameView.stopMusicPlayer();
         //gameView.releaseMusicPlayer();
     }
 
 
-
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            switch(msg.what){
+            switch (msg.what) {
                 case MESSAGE_READ:
                     byte[] readBuff = (byte[]) msg.obj;
                     String tempMsg = new String(readBuff, 0, msg.arg1);
@@ -122,7 +117,7 @@ public class MainActivity extends Activity {
     });
 
     private void exqListener() {
-        btnOnOff.setOnClickListener(new View.OnClickListener(){
+        btnOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (serverClass.getClass().isInstance(new ServerClass()))
@@ -168,7 +163,6 @@ public class MainActivity extends Activity {
                 ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
                 ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
                 ActivityCompat.requestPermissions(mainActivity, new String[]{Manifest.permission.ACCESS_MEDIA_LOCATION}, 1);
-
 
 
                 if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -228,14 +222,14 @@ public class MainActivity extends Activity {
     WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            if (!peerList.getDeviceList().equals(peers)){
+            if (!peerList.getDeviceList().equals(peers)) {
                 peers.clear();
                 peers.addAll(peerList.getDeviceList());
                 deviceNameArray = new String[peerList.getDeviceList().size()];
                 deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
                 int index = 0;
 
-                for (WifiP2pDevice device : peerList.getDeviceList()){
+                for (WifiP2pDevice device : peerList.getDeviceList()) {
                     deviceNameArray[index] = device.deviceName;
                     deviceArray[index] = device;
                     index++;
@@ -246,7 +240,7 @@ public class MainActivity extends Activity {
                 listView.setAdapter(adapter);
             }
 
-            if (peers.size() == 0){
+            if (peers.size() == 0) {
                 Toast.makeText(getApplicationContext(), "No Device Found", Toast.LENGTH_SHORT);
                 return;
             }
@@ -258,13 +252,12 @@ public class MainActivity extends Activity {
         public void onConnectionInfoAvailable(WifiP2pInfo info) {
             final InetAddress groupOwnerAddress = info.groupOwnerAddress;
 
-            if (info.groupFormed && info.isGroupOwner){
+            if (info.groupFormed && info.isGroupOwner) {
                 connectionStatus.setText("Host");
                 serverClass = new ServerClass();
                 serverClass.start();
                 btnOnOff.setEnabled(true);
-            }
-            else if (info.groupFormed){
+            } else if (info.groupFormed) {
                 connectionStatus.setText("Client");
                 clientClass = new ClientClass(groupOwnerAddress);
                 clientClass.start();
@@ -290,15 +283,15 @@ public class MainActivity extends Activity {
         private Socket socket;
         private ServerSocket serverSocket;
 
-        public void CloseSocket(){
-            try{
+        public void CloseSocket() {
+            try {
                 if (socket.isConnected())
                     serverSocket.close();
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         @Override
         public void run() {
             try {
@@ -313,7 +306,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class SendReceive extends Thread{
+    private class SendReceive extends Thread {
         private Socket socket;
         private InputStream inputStream;
         private OutputStream outputStream;
@@ -334,11 +327,10 @@ public class MainActivity extends Activity {
             byte[] buffer = new byte[1024];
             int bytes;
 
-            while(socket != null)
-            {
+            while (socket != null) {
                 try {
                     bytes = inputStream.read(buffer);
-                    if (bytes > 0){
+                    if (bytes > 0) {
                         handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                     }
                 } catch (IOException e) {
@@ -348,7 +340,7 @@ public class MainActivity extends Activity {
         }
 
         public void write(final byte[] bytes) {
-            new Thread(new Runnable(){
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -361,21 +353,20 @@ public class MainActivity extends Activity {
         }
     }
 
-    public class ClientClass extends Thread{
+    public class ClientClass extends Thread {
         private Socket socket;
         private String hostAdd;
 
-        public ClientClass(InetAddress hostAddress){
+        public ClientClass(InetAddress hostAddress) {
             hostAdd = hostAddress.getHostAddress();
             socket = new Socket();
         }
 
-        public void CloseSocket(){
-            try{
+        public void CloseSocket() {
+            try {
                 if (socket.isConnected())
                     socket.close();
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

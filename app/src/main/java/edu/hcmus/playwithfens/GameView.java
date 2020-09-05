@@ -3,18 +3,11 @@ package edu.hcmus.playwithfens;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
-import java.io.IOException;
 
 public class GameView extends SurfaceView {
     private MainActivity activity;
@@ -30,8 +23,7 @@ public class GameView extends SurfaceView {
     private SplashState splashState;
     private GamePlayState gamePlayState;
 
-    public GameView(Context context, MainActivity activity)
-    {
+    public GameView(Context context, MainActivity activity) {
         super(context);
         this.activity = activity;
         this.context = context;
@@ -58,31 +50,32 @@ public class GameView extends SurfaceView {
             public void surfaceCreated(SurfaceHolder holder) {
                 createScreens();
                 gameLoopThread.setRunning(true);
-                if(firstStart){
+                if (firstStart) {
                     gameLoopThread.start();
-                    firstStart=false;
+                    firstStart = false;
                 }
             }
 
             @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            }
         });
     }
 
-    public GameLoopThread getGameLoopThread()
-    {
+    public GameLoopThread getGameLoopThread() {
         return gameLoopThread;
     }
-    public Activity getGameViewAcivity(){
+
+    public Activity getGameViewAcivity() {
         return this.activity;
     }
-    public Context getGameViewContext(){
+
+    public Context getGameViewContext() {
         return this.context;
     }
 
-    private void createScreens()
-    {
-        if (gameState == 1){
+    private void createScreens() {
+        if (gameState == 1) {
             this.splashState = new SplashState(this);
         }
 
@@ -93,25 +86,25 @@ public class GameView extends SurfaceView {
     public boolean onTouchEvent(MotionEvent event) {
 
 
-            synchronized (getHolder()) {
+        synchronized (getHolder()) {
 
-                switch(gameState){
+            switch (gameState) {
 
-                    case 1://Welcome Screen
-                        gameState = 2;
+                case 1://Welcome Screen
+                    gameState = 2;
 
-                        break;
-                    case 2:// Play game
-                        if (event.getAction() == MotionEvent.ACTION_UP){
-                            x = event.getX();
-                            y = event.getY();
-                        }
-                        break;
-                    default:
-                        gameState = 1;
-                        break;
-                }
+                    break;
+                case 2:// Play game
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        x = event.getX();
+                        y = event.getY();
+                    }
+                    break;
+                default:
+                    gameState = 1;
+                    break;
             }
+        }
         return true;
     }
 
@@ -120,24 +113,24 @@ public class GameView extends SurfaceView {
     protected void onDraw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
 
-        switch (gameState){
+        switch (gameState) {
             case 1: //Splash State
                 splashState.draw(canvas);
                 // tap to start.
 
-                try{
+                try {
                     Thread.sleep(1000);
                     delay++;
-                }catch (InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                if (delay == 2){
+                if (delay == 2) {
                     gameState = 2;
                 }
                 break;
             case 2: //Play game
                 gamePlayState.draw(canvas);
-                gamePlayState.update(x, y-=50, canvas);
+                gamePlayState.update(x, y -= 50, canvas);
 
                 break;
             default:

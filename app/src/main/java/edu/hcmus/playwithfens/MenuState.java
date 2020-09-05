@@ -41,7 +41,7 @@ public class MenuState extends Activity {
                 // Bắt đầu tìm người chơi. -> MainActivity.
             }
         });
-        btnTutorial.setOnClickListener(new View.OnClickListener(){
+        btnTutorial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Chuyển sang màn hình hướng dẫn.
