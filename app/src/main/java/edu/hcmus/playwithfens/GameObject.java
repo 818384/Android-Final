@@ -3,8 +3,8 @@ package edu.hcmus.playwithfens;
 import android.graphics.Bitmap;
 
 public class GameObject {
-    private int x = 0;
-    private int y = 0;
+    private float x = 0;
+    private float y = 0;
     private boolean isLive = true;
     private Bitmap bitmap;
 
@@ -18,19 +18,19 @@ public class GameObject {
         this.bitmap = bitmap;
     }
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
-    public void setX(int x) {
+    public void setX(float x) {
         this.x = x;
     }
 
-    public int getY() {
+    public float getY() {
         return y;
     }
 
-    public void setY(int y) {
+    public void setY(float y) {
         this.y = y;
     }
 
@@ -48,5 +48,32 @@ public class GameObject {
 
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
+    }
+
+    public boolean checkIsCollition(GameObject gameObject)
+    {
+        if(this.x < gameObject.getX() + gameObject.getBitmap().getWidth() &&
+                        this.x + this.bitmap.getWidth() > gameObject.getX() &&
+                        this.y + this.bitmap.getHeight() > gameObject.getY() &&
+                        this.y < gameObject.getY() + gameObject.getBitmap().getHeight())
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    public boolean checkIsCollitionPoint(float x, float y)
+    {
+        if(this.x < x &&
+                this.x + this.bitmap.getWidth() > x &&
+                this.y + this.bitmap.getHeight() > y &&
+                this.y < y )
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 }

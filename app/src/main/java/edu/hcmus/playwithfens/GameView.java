@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.icu.text.SymbolTable;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -19,6 +21,9 @@ public class GameView extends SurfaceView {
     private MotionEvent eventGameView;
     private float x;
     private float y;
+    private float xDrag;
+    private float yDrag;
+    private boolean checkDrag = false;
 
     private SplashState splashState;
     private GamePlayState gamePlayState;
@@ -98,6 +103,27 @@ public class GameView extends SurfaceView {
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         x = event.getX();
                         y = event.getY();
+                        checkDrag = false;
+                        break;
+                    }
+                    if(event.getAction() == MotionEvent.ACTION_DOWN){
+
+//                        xDrag = event.getX();
+//                        yDrag = event.getY();
+                        GameObject ship = gamePlayState.getShip();
+                        if (ship.checkIsCollitionPoint(event.getX(), event.getY())){
+                            xDrag = event.getX();
+                            yDrag = event.getY();
+                            checkDrag = true;
+                            System.out.println("ACTION_DOWN");
+                        }
+                        break;
+                    }
+                    if(event.getAction() == MotionEvent.ACTION_MOVE && checkDrag){
+                        System.out.println("ACTION_MOVE");
+                        xDrag = event.getX();
+                        yDrag = event.getY();
+
                     }
                     break;
                 default:
@@ -130,7 +156,7 @@ public class GameView extends SurfaceView {
                 break;
             case 2: //Play game
                 gamePlayState.draw(canvas);
-                gamePlayState.update(x, y, canvas);
+                gamePlayState.update(xDrag, yDrag, canvas);
                 if (y != 0.0f)
                     y -= 50;
 
