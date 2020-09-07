@@ -142,15 +142,9 @@ public class Sprite {
 
     public boolean isCollition(Sprite sprite2) {
         // Detects collision between two rectangles (sprites)
-        if (
-                this.x < sprite2.getX() + sprite2.getWidth() &&
-                        this.x + this.width > sprite2.getX() &&
-                        this.y + this.height > sprite2.getY() &&
-                        this.y < sprite2.getY() + sprite2.getHeight()
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.x < sprite2.getX() + sprite2.getWidth() &&
+                this.x + this.width > sprite2.getX() &&
+                this.y + this.height > sprite2.getY() &&
+                this.y < sprite2.getY() + sprite2.getHeight();
     }
 }

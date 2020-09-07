@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
@@ -77,9 +78,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 //        initialWork();
 //        exqListener();
-        gameView = new GameView(this, this);
-        setContentView(gameView);
-
+        startActivity(new Intent(this, GamePlayState.class));
     }
 
     @Override
@@ -195,13 +194,13 @@ public class MainActivity extends Activity {
     }
 
     private void initialWork() {
-        btnOnOff = (Button) findViewById(R.id.onOff);
-        btnDiscovery = (Button) findViewById(R.id.discover);
-        btnSend = (Button) findViewById(R.id.sendButton);
-        listView = (ListView) findViewById(R.id.peerListView);
-        read_msg_box = (TextView) findViewById(R.id.readMsg);
-        connectionStatus = (TextView) findViewById(R.id.connectionStatus);
-        writeMsg = (EditText) findViewById(R.id.writeMsg);
+        btnOnOff = findViewById(R.id.onOff);
+        btnDiscovery = findViewById(R.id.discover);
+        btnSend = findViewById(R.id.sendButton);
+        listView = findViewById(R.id.peerListView);
+        read_msg_box = findViewById(R.id.readMsg);
+        connectionStatus = findViewById(R.id.connectionStatus);
+        writeMsg = findViewById(R.id.writeMsg);
 
 
         btnOnOff.setEnabled(false);

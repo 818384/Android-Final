@@ -1,145 +1,99 @@
 package edu.hcmus.playwithfens;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.view.MotionEvent;
+import android.graphics.RectF;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class GameView extends SurfaceView {
-    private MainActivity activity;
-    private Context context;
-    private GameLoopThread gameLoopThread;
-    private boolean firstStart = true;
-    private int gameState = 1; // 1 Splash State, 2 Play.
-    private int delay = 0;
-    private MotionEvent eventGameView;
-    private float x;
-    private float y;
+import java.util.Map;
 
-    private SplashState splashState;
-    private GamePlayState gamePlayState;
-
-    public GameView(Context context, MainActivity activity) {
+public class GameView extends SurfaceView implements Runnable {
+    private Map params;
+    private int gameState = 1;
+    private int delay = 1;
+    private Thread thread = null;
+    private boolean running = true;
+    private SurfaceHolder holder;
+    public GameView(Context context) {
         super(context);
-        this.activity = activity;
-        this.context = context;
-
-        gameLoopThread = new GameLoopThread(this);
-
-        getHolder().addCallback(new SurfaceHolder.Callback() {
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                boolean retry = true;
-                gameLoopThread.setRunning(false);
-                while (retry) {
-                    try {
-                        gameLoopThread.join();
-                        retry = false;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                createScreens();
-                gameLoopThread.setRunning(true);
-                if (firstStart) {
-                    gameLoopThread.start();
-                    firstStart = false;
-                }
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            }
-        });
+        setWillNotDraw(false);
+        holder = getHolder();
     }
 
-    public GameLoopThread getGameLoopThread() {
-        return gameLoopThread;
+    public Map getParams() {
+        return params;
     }
 
-    public Activity getGameViewAcivity() {
-        return this.activity;
+    public void setParams(Map params) {
+        this.params = params;
     }
 
-    public Context getGameViewContext() {
-        return this.context;
-    }
-
-    private void createScreens() {
-        if (gameState == 1) {
-            this.splashState = new SplashState(this);
-        }
-
-        this.gamePlayState = new GamePlayState(this);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-
-        synchronized (getHolder()) {
-
-            switch (gameState) {
-
-                case 1://Welcome Screen
-                    gameState = 2;
-
-                    break;
-                case 2:// Play game
-                    if (event.getAction() == MotionEvent.ACTION_UP) {
-                        x = event.getX();
-                        y = event.getY();
-                    }
-                    break;
-                default:
-                    gameState = 1;
-                    break;
-            }
-        }
-        return true;
-    }
-
-    @SuppressLint("WrongCall")
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         canvas.drawColor(Color.BLACK);
+        doDraw(canvas);
+//        switch (gameState) {
+//            case 1: //Splash State
+//                doDraw(canvas);
+//                // tap to start.
+//                try {
+//                    Thread.sleep(1000);
+//                    delay++;
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                if (delay == 2) {
+//                    gameState = 2;
+//                }
+//                break;
+//            case 2: //Play game
+//                doDraw(canvas);
+//                break;
+//            default:
+//                gameState = 1;
+//                break;
+//        }
+    }
 
-        switch (gameState) {
-            case 1: //Splash State
-                splashState.draw(canvas);
-                // tap to start.
-
-                try {
-                    Thread.sleep(1000);
-                    delay++;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (delay == 2) {
-                    gameState = 2;
-                }
-                break;
-            case 2: //Play game
-                gamePlayState.draw(canvas);
-                gamePlayState.update(x, y, canvas);
-                if (y != 0.0f)
-                    y -= 50;
-
-                break;
-            default:
-                gameState = 1;
-                break;
+    private void doDraw(Canvas canvas) {
+        if (getParams() != null) {
+            canvas.drawBitmap((Bitmap) params.get("BITMAP"), null, (RectF) params.get("RECT"), null);
+            setParams(null);
         }
     }
 
+    @Override
+    public void run() {
+        while (running) {
+            if(!holder.getSurface().isValid()){
+                continue;
+            }
+            Canvas canvas = holder.lockCanvas();
+            doDraw(canvas);
+            holder.unlockCanvasAndPost(canvas);
+        }
+    }
 
+    public void pause() {
+        running = false;
+        while (true) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            break;
+        }
+        thread = null;
+    }
+
+    public void resume() {
+        running = true;
+        thread = new Thread();
+        thread.start();
+    }
 }

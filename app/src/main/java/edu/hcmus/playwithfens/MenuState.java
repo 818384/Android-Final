@@ -23,11 +23,11 @@ public class MenuState extends Activity {
     }
 
     private void initWork() {
-        txtMenu = (TextView) findViewById(R.id.txtMenu);
-        btnStart = (Button) findViewById(R.id.btnStart);
-        btnTutorial = (Button) findViewById(R.id.btnTutorial);
-        btnAbout = (Button) findViewById(R.id.btnAbout);
-        btnExit = (Button) findViewById(R.id.btnExit);
+        txtMenu = findViewById(R.id.txtMenu);
+        btnStart = findViewById(R.id.btnStart);
+        btnTutorial = findViewById(R.id.btnTutorial);
+        btnAbout = findViewById(R.id.btnAbout);
+        btnExit = findViewById(R.id.btnExit);
 
         txtMenu.setText("MENU");
         btnStart.setText("BẮT ĐẦU");
