@@ -1,14 +1,17 @@
 package edu.hcmus.playwithfens;
 
 import android.graphics.Bitmap;
+import android.graphics.RectF;
 
 public class GameObject {
     private float x = 0;
     private float y = 0;
     private boolean isLive = true;
+    private boolean checkLock = true;
+    private float dt;
     private Bitmap bitmap;
 
-    public GameObject(int x, int y, Bitmap bitmap) {
+    public GameObject(float x, float y, Bitmap bitmap) {
         this.x = x;
         this.y = y;
         this.bitmap = bitmap;
@@ -75,5 +78,32 @@ public class GameObject {
         else {
             return false;
         }
+    }
+
+    public RectF getDstRectF(){
+        float left = (x - bitmap.getWidth() / 2.0f);
+        float top = (y - bitmap.getHeight() / 2.0f);
+        RectF dst = new RectF(left, top, left + bitmap.getWidth(), top + bitmap.getHeight());
+        return dst;
+    }
+
+    public float run(){
+        return this.y = this.y - 10;
+    }
+
+    public boolean isCheckLock() {
+        return checkLock;
+    }
+
+    public void setCheckLock(boolean checkLock) {
+        this.checkLock = checkLock;
+    }
+
+    public void setDt(float dt) {
+        this.dt = dt;
+    }
+
+    public float getDt() {
+        return dt;
     }
 }

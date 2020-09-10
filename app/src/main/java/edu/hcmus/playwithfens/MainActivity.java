@@ -2,6 +2,7 @@ package edu.hcmus.playwithfens;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
@@ -20,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +48,7 @@ public class MainActivity extends Activity {
     private TextView read_msg_box;
     private TextView connectionStatus;
     private EditText writeMsg;
+    private ImageView imgShip;
 
     private WifiManager wifiManager;
     private WifiP2pManager mManager;
@@ -66,6 +69,8 @@ public class MainActivity extends Activity {
     private SendReceive sendReceive;
 
     private GameView gameView;
+    private boolean checkGamePlay = false;
+    private GameLoopThread gameLoopThread;
 
     TextView getConnectionStatus() {
         return connectionStatus;
@@ -74,25 +79,28 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-//        initialWork();
-//        exqListener();
-        gameView = new GameView(this, this);
-        setContentView(gameView);
+        //setContentView(R.layout.activity_main);
+        //initialWork();
+        //exqListener();
+        //if(checkGamePlay){
+            gameView = new GameView(this, this);
+            setContentView(gameView);
+        //}
+
 
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        //gameView.pauseMusicPlayer();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //gameView.startMusicPlayer();
-    }
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        //gameView.pauseMusicPlayer();
+//    }
+//
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        //gameView.startMusicPlayer();
+//    }
 
     @Override
     public void onDestroy() {
@@ -110,6 +118,7 @@ public class MainActivity extends Activity {
                     byte[] readBuff = (byte[]) msg.obj;
                     String tempMsg = new String(readBuff, 0, msg.arg1);
                     read_msg_box.setText(tempMsg);
+                    //gameView.setxMsg(Float.valueOf(tempMsg));
                     break;
             }
             return true;
@@ -120,9 +129,10 @@ public class MainActivity extends Activity {
         btnOnOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (serverClass.getClass().isInstance(new ServerClass()))
-                    serverClass.CloseSocket();
+//                if (serverClass.getClass().isInstance(new ServerClass()))
+//                    serverClass.CloseSocket();
                 //clientClass.CloseSocket();
+                btnSend.callOnClick();
             }
         });
         btnDiscovery.setOnClickListener(new View.OnClickListener() {
@@ -172,6 +182,14 @@ public class MainActivity extends Activity {
                     @Override
                     public void onSuccess() {
                         Toast.makeText(getApplicationContext(), "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+                        checkGamePlay = true;
+//                        if(checkGamePlay){
+//                            gameView = new GameView(getApplicationContext(), MainActivity.this);
+//                            setContentView(gameView);
+//                            btnSend.callOnClick();
+//                            System.out.println("Qua man choi");
+//
+//                        }
 
                     }
 
@@ -187,7 +205,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 String msg = writeMsg.getText().toString();
-                System.out.println(msg.getBytes());
                 byte[] ms = msg.getBytes();
                 sendReceive.write(ms);
             }
@@ -202,6 +219,10 @@ public class MainActivity extends Activity {
         read_msg_box = (TextView) findViewById(R.id.readMsg);
         connectionStatus = (TextView) findViewById(R.id.connectionStatus);
         writeMsg = (EditText) findViewById(R.id.writeMsg);
+        writeMsg.setText("asdasd");
+        imgShip = (ImageView) findViewById(R.id.imgShip);
+        imgShip.setX(500);
+        imgShip.setY(500);
 
 
         btnOnOff.setEnabled(false);
@@ -247,7 +268,8 @@ public class MainActivity extends Activity {
         }
     };
 
-    WifiP2pManager.ConnectionInfoListener connectionInfoListener = new WifiP2pManager.ConnectionInfoListener() {
+    WifiP2pManager.ConnectionInfoListener connectionInfoListener = new WifiP2pManager.ConnectionInfoListener()
+    {
         @Override
         public void onConnectionInfoAvailable(WifiP2pInfo info) {
             final InetAddress groupOwnerAddress = info.groupOwnerAddress;
@@ -257,6 +279,7 @@ public class MainActivity extends Activity {
                 serverClass = new ServerClass();
                 serverClass.start();
                 btnOnOff.setEnabled(true);
+
             } else if (info.groupFormed) {
                 connectionStatus.setText("Client");
                 clientClass = new ClientClass(groupOwnerAddress);
@@ -266,18 +289,20 @@ public class MainActivity extends Activity {
         }
     };
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-//        registerReceiver(mReceiver, mIntentFilter);
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        unregisterReceiver(mReceiver);
-//    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
+        //registerReceiver(mReceiver, mIntentFilter);
+        gameView.resume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregisterReceiver(mReceiver);
+        gameView.pause();
+    }
 
     public class ServerClass extends Thread {
         private Socket socket;
@@ -306,7 +331,8 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class SendReceive extends Thread {
+    private class SendReceive extends Thread
+    {
         private Socket socket;
         private InputStream inputStream;
         private OutputStream outputStream;
@@ -344,7 +370,9 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
                     try {
-                        outputStream.write(bytes);
+                        byte[] a = "1".getBytes();
+                        System.out.println(a);
+                        outputStream.write(a);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -353,7 +381,8 @@ public class MainActivity extends Activity {
         }
     }
 
-    public class ClientClass extends Thread {
+    public class ClientClass extends Thread
+    {
         private Socket socket;
         private String hostAdd;
 

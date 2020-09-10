@@ -17,6 +17,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private MainActivity mActivity;
+    private boolean checkSend = false;
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager mManager, WifiP2pManager.Channel mChannel, MainActivity mActivity) {
         this.mManager = mManager;
@@ -40,6 +41,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                 if (ActivityCompat.checkSelfPermission(mActivity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(context, "okie", Toast.LENGTH_SHORT).show();
+                    checkSend = true;
                     mManager.requestPeers(mChannel, mActivity.peerListListener);
                 } else {
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -68,5 +70,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // do something.
         }
+    }
+
+    public boolean isCheckSend() {
+        return checkSend;
     }
 }

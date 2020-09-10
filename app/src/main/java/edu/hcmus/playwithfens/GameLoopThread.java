@@ -6,9 +6,10 @@ import android.graphics.Canvas;
 @SuppressLint("WrongCall")
 public class GameLoopThread extends Thread {
 
-    static final long FPS = 25;
+    private static final long FPS = 60;
     private GameView view;
     private boolean running = false;
+    private float dt = 1.0f/ ((float) FPS);
 
     public GameLoopThread(GameView view) {
         this.view = view;
@@ -22,8 +23,13 @@ public class GameLoopThread extends Thread {
         return running;
     }
 
+    public float getDt() {
+        return dt;
+    }
+
     @Override
-    public void run() {
+    public void run()
+    {
         long ticksPS = 1000 / FPS;
         long startTime;
         long sleepTime;
@@ -35,27 +41,24 @@ public class GameLoopThread extends Thread {
             try {
                 c = view.getHolder().lockCanvas();
                 synchronized (view.getHolder()) {
-                    view.onDraw(c);
+                    //view.onDraw(c);
                 }
-            } finally {
+            }
+            finally {
                 if (c != null) {
                     view.getHolder().unlockCanvasAndPost(c);
                 }
             }
 
-/*
-            sleepTime = ticksPS - (System.currentTimeMillis() - startTime);
-
-            try {
-                if (sleepTime > 0)
-                    sleep(sleepTime);
-                else
-                    sleep(10);
-            }
-            catch (Exception e) {}
-*/
+//            sleepTime = ticksPS - (System.currentTimeMillis() - startTime);
+//
+//            try {
+//                if (sleepTime > 0)
+//                    sleep(sleepTime);
+//                else
+//                    sleep(10);
+//            }
+//            catch (Exception e) {}
         }
     }
-
-
 }
