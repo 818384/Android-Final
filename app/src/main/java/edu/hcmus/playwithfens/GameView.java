@@ -44,6 +44,8 @@ public class GameView extends SurfaceView implements Runnable {
     private GamePlayState gamePlayState;
 
     private Bitmap background;
+    private Bitmap background2;
+    private GameObject backgroundGame;
     private GameObject rocket;
     private ArrayList<GameObject> arrayShip = new ArrayList<GameObject>();
     private GameObject btnStart;
@@ -53,6 +55,7 @@ public class GameView extends SurfaceView implements Runnable {
     private float YDes = 0.0f;
     private int stepGame = 1; // Di chuyển các chiến hạm.
     private float xMsg = 0;
+    private boolean changBackground = false;
 
     public GameView(Context context, MainActivity activity) {
         super(activity);
@@ -69,6 +72,8 @@ public class GameView extends SurfaceView implements Runnable {
         option.inMutable = true;
 
         background = BitmapFactory.decodeResource(getResources(), R.drawable.background, option);
+        background2 = BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
+        backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
         Bitmap rocketBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100, option);
@@ -208,6 +213,12 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }else {
                     rocket.run();
+                    for (GameObject ship : arrayShip) {
+                        if (rocket.checkIsCollition(ship)) {
+                            System.out.println("VA CHAM");
+                            changBackground = true;
+                        }
+                    }
                 }
                 break;
         }
@@ -217,7 +228,13 @@ public class GameView extends SurfaceView implements Runnable {
         if (getHolder().getSurface().isValid()) {
             Canvas canvas = getHolder().lockCanvas();
             RectF dst = new RectF(0, 0, 0 + getWidth(), 0 + getHeight());
-            canvas.drawBitmap(background, null, dst, null);
+            if (!changBackground){
+                backgroundGame.setBitmap(background);
+            }
+            else{
+                backgroundGame.setBitmap(background2);
+            }
+            canvas.drawBitmap(backgroundGame.getBitmap(), null, dst, null);
             for (GameObject ship : arrayShip) {
                 RectF dstShip = ship.getDstRectF();
                 canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
@@ -232,17 +249,26 @@ public class GameView extends SurfaceView implements Runnable {
                     canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
                     //System.out.println(rocket.getY());
                     //}while (rocket.run() >= YDes);
-                    for (GameObject ship : arrayShip) {
-                        if (rocket.checkIsCollition(ship)) {
-                            System.out.println("VA CHAM");
-                        }
-                    }
+
 //                canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
 //                if (rocket.run() < 0)
 //                    rocket.setCheckLock(false);
                     break;
             }
             getHolder().unlockCanvasAndPost(canvas);
+        }
+    }
+
+    // Bật tường lửa.
+    private void TurnOnFireWall(boolean valueFireWall){
+        BitmapFactory.Options option = new BitmapFactory.Options();
+        option.inMutable = true;
+        if (valueFireWall)
+        {
+            background =  BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
+        }
+        else{
+            background =  BitmapFactory.decodeResource(getResources(), R.drawable.background, option);
         }
     }
 
