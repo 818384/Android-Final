@@ -7,8 +7,9 @@ public class GameObject {
     private float x = 0;
     private float y = 0;
     private boolean isLive = true;
-    private boolean checkLock = true;
+    private boolean checkLock = false;
     private float dt;
+    private float yDead;
     private Bitmap bitmap;
 
     public GameObject(float x, float y, Bitmap bitmap) {
@@ -68,10 +69,10 @@ public class GameObject {
     }
     public boolean checkIsCollitionPoint(float x, float y)
     {
-        if(this.x < x &&
-                this.x + this.bitmap.getWidth() > x &&
-                this.y + this.bitmap.getHeight() > y &&
-                this.y < y )
+        if(this.x <= x &&
+                this.x + this.bitmap.getWidth() >= x &&
+                this.y + this.bitmap.getHeight() >= y &&
+                this.y <= y )
         {
             return true;
         }
@@ -88,7 +89,14 @@ public class GameObject {
     }
 
     public float run(){
+        if (this.y <= yDead){
+            isLive = false;
+        }
         return this.y = this.y - 10;
+    }
+
+    public void setyDead(float ydie){
+        this.yDead = ydie;
     }
 
     public boolean isCheckLock() {

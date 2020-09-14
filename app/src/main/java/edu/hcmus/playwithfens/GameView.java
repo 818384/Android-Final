@@ -49,6 +49,8 @@ public class GameView extends SurfaceView implements Runnable {
     private GameObject rocket;
     private ArrayList<GameObject> arrayShip = new ArrayList<GameObject>();
     private GameObject btnStart;
+    private GameObject btnFeature1;
+    private GameObject btnFeature2;
     private ViewGroup.LayoutParams myLayout;
     private int widthScreen;
     private int heightScreen;
@@ -81,27 +83,30 @@ public class GameView extends SurfaceView implements Runnable {
         rocket.setLive(false);
         // Nút bắt đầu khi sắp tàu xong.
         Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.btn_start, option);
-        btnStart = new GameObject(this.widthScreen/2, this.heightScreen/4, startButton);
+        btnStart = new GameObject(this.widthScreen / 2, this.heightScreen / 2, startButton);
+        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
+        btnFeature1 = new GameObject(this.widthScreen / 4, this.heightScreen / 4, feature1);
+        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
+        btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
 
         // Sắp 4 tàu ngẫu nhiên
         ArrayList<Float> arrayTemp = new ArrayList<Float>();
-        for (int i = 0; i < 4; i++)
-        {
+        for (int i = 0; i < 4; i++) {
             Random rd = new Random();
             float x, y;
             do {
                 x = rd.nextInt((this.widthScreen - 0 + 1) + 0);
-                for (int j = 0; j < arrayTemp.size(); j++){
+                for (int j = 0; j < arrayTemp.size(); j++) {
                     if (arrayTemp.get(j) == x)
                         x = -1.0f;
                 }
-            }while (x == -1.0f);
+            } while (x == -1.0f);
             arrayTemp.add(x);
             //float y = rd.nextInt((this.heightScreen - this.heightScreen/2 + 1) + this.heightScreen/2);
-            do{
-                y = rd.nextInt((this.heightScreen - this.heightScreen/2 + 1) + this.heightScreen/2);
+            do {
+                y = rd.nextInt((this.heightScreen - this.heightScreen / 2 + 1) + this.heightScreen / 2);
 
-            }while (y < this.heightScreen / 2);
+            } while (y < this.heightScreen / 2 || y > this.heightScreen - 50);
             String nameShip = "ship" + (i + 1);
             int resourceId = getResources().getIdentifier(nameShip, "drawable", this.context.getPackageName());
             Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), resourceId, option);
@@ -173,21 +178,75 @@ public class GameView extends SurfaceView implements Runnable {
 //    }
 
 
-    private float getYOfPointSymmetry(float y){
+    private float getYOfPointSymmetry(float y) {
         return (heightScreen / 2.0f) - ((heightScreen / 2.0f) - (heightScreen - y));
     }
+
+    private void draw() {
+        if (getHolder().getSurface().isValid()) {
+            Canvas canvas = getHolder().lockCanvas();
+            RectF dst = new RectF(0, 0, 0 + getWidth(), 0 + getHeight());
+            canvas.drawBitmap(backgroundGame.getBitmap(), null, dst, null);
+            for (GameObject ship : arrayShip) {
+                if (ship.isLive()) {
+                    RectF dstShip = ship.getDstRectF();
+                    canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
+                }
+            }
+
+            switch (stepGame) {
+                case 1:
+                    canvas.drawBitmap(btnStart.getBitmap(), null, btnStart.getDstRectF(), null);
+                    break;
+                case 2:
+                    //do{
+                    if (rocket.isLive()) {
+                        canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
+                    }
+                    if (btnFeature1.isLive()) {
+                        canvas.drawBitmap(btnFeature1.getBitmap(), null, btnFeature1.getDstRectF(), null);
+                    }
+                    if (btnFeature2.isLive()){
+                        canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
+                    }
+                    //System.out.println(rocket.getY());
+                    //}while (rocket.run() >= YDes);
+
+//                canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
+//                if (rocket.run() < 0)
+//                    rocket.setCheckLock(false);
+                    break;
+            }
+            getHolder().unlockCanvasAndPost(canvas);
+        }
+    }
+
     private void update() {
-        switch (stepGame)
-        {
+        switch (stepGame) {
             case 1:
-                if (btnStart.checkIsCollitionPoint(x, y)){
+                if (btnStart.checkIsCollitionPoint(x, y)) {
                     stepGame = 2;
                     rocket.setLive(true);
                     rocket.setCheckLock(false);
+                    for (GameObject ship : arrayShip) {
+                        ship.setCheckLock(true);
+                    }
                     System.out.println("STEP GAME = " + stepGame);
                 }
                 break;
             case 2:
+                // Bật tính năng 1: Qua tường lửa thì không thấy tên lửa.
+                if (btnFeature1.checkIsCollitionPoint(x, y) && btnFeature1.isLive()) {
+                    btnFeature1.setLive(false);
+                    changBackground = true;
+                    TurnOnFireWall(changBackground);
+                }
+                if (btnFeature2.checkIsCollitionPoint(x, y) && btnFeature2.isLive()){
+                    btnFeature2.setLive(false);
+                    for (GameObject ship : arrayShip) {
+                        ship.setCheckLock(false);
+                    }
+                }
                 if (rocket.isLive() && !rocket.isCheckLock()) {
 //                    rocket.setX(x);
 //                    rocket.setY(y);
@@ -211,64 +270,27 @@ public class GameView extends SurfaceView implements Runnable {
                     } else {
                         YDes = 0.0f;
                     }
-                }else {
+                } else {
                     rocket.run();
                     for (GameObject ship : arrayShip) {
                         if (rocket.checkIsCollition(ship)) {
                             System.out.println("VA CHAM");
-                            changBackground = true;
+                            rocket.setLive(false);
+                            ship.setLive(false);
                         }
                     }
                 }
                 break;
         }
     }
-    private void draw()
-    {
-        if (getHolder().getSurface().isValid()) {
-            Canvas canvas = getHolder().lockCanvas();
-            RectF dst = new RectF(0, 0, 0 + getWidth(), 0 + getHeight());
-            if (!changBackground){
-                backgroundGame.setBitmap(background);
-            }
-            else{
-                backgroundGame.setBitmap(background2);
-            }
-            canvas.drawBitmap(backgroundGame.getBitmap(), null, dst, null);
-            for (GameObject ship : arrayShip) {
-                RectF dstShip = ship.getDstRectF();
-                canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
-            }
-
-            switch (stepGame) {
-                case 1:
-                    canvas.drawBitmap(btnStart.getBitmap(), null, btnStart.getDstRectF(), null);
-                    break;
-                case 2:
-                    //do{
-                    canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
-                    //System.out.println(rocket.getY());
-                    //}while (rocket.run() >= YDes);
-
-//                canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
-//                if (rocket.run() < 0)
-//                    rocket.setCheckLock(false);
-                    break;
-            }
-            getHolder().unlockCanvasAndPost(canvas);
-        }
-    }
 
     // Bật tường lửa.
-    private void TurnOnFireWall(boolean valueFireWall){
-        BitmapFactory.Options option = new BitmapFactory.Options();
-        option.inMutable = true;
-        if (valueFireWall)
-        {
-            background =  BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
-        }
-        else{
-            background =  BitmapFactory.decodeResource(getResources(), R.drawable.background, option);
+    private void TurnOnFireWall(boolean valueFireWall) {
+        if (valueFireWall) {
+            backgroundGame.setBitmap(background2);
+            rocket.setyDead(this.heightScreen / 2);
+        } else {
+            backgroundGame.setBitmap(background);
         }
     }
 
@@ -297,10 +319,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        synchronized (getHolder())
-        {
+    public boolean onTouchEvent(MotionEvent event) {
+        synchronized (getHolder()) {
             switch (gameState) {
 
                 case 1://Welcome Screen
@@ -313,12 +333,21 @@ public class GameView extends SurfaceView implements Runnable {
                         x = event.getX();
                         y = event.getY();
                         checkDrag = false;
+//                        if (!rocket.isLive()){
+//                            rocket.setLive(true);
+//                            if (rocket.isCheckLock()){
+//                                rocket.setCheckLock(false);
+//                            }
+//                        }
+//                        for (GameObject ship : arrayShip) {
+//                            ship.setCheckLock(true);
+//                        }
                         System.out.println("ACTION_UP");
                         break;
                     }
-                    if (event.getAction() == MotionEvent.ACTION_DOWN && stepGame == 1) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN && (stepGame == 1 || stepGame == 2)) {
                         for (GameObject ship : arrayShip) {
-                            if (ship.checkIsCollitionPoint(event.getX(), event.getY())) {
+                            if (ship.checkIsCollitionPoint(event.getX(), event.getY()) && ship.isCheckLock() == false) {
                                 xDrag = event.getX();
                                 yDrag = event.getY();
                                 shipp = ship;
@@ -329,7 +358,8 @@ public class GameView extends SurfaceView implements Runnable {
                         }
                         break;
                     }
-                    if (event.getAction() == MotionEvent.ACTION_MOVE && checkDrag && stepGame == 1) {
+                    if (event.getAction() == MotionEvent.ACTION_MOVE && checkDrag && (stepGame == 1 || stepGame == 2)
+                            && shipp != null && shipp.isCheckLock() == false) {
                         System.out.println("ACTION_MOVE");
                         shipp.setX(event.getX());
                         shipp.setY(event.getY());
@@ -340,7 +370,6 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                     break;
                 default:
-                    gameState = 1;
                     break;
             }
         }
