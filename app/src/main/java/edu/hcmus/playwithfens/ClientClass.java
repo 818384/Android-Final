@@ -8,10 +8,11 @@ import java.net.Socket;
 public class ClientClass extends Thread{
     private Socket socket;
     private String hostAdd;
+    private SendReceive sendReceive;
 
     public ClientClass(InetAddress hostAddress) {
-        hostAdd = hostAddress.getHostAddress();
-        socket = new Socket();
+        this.hostAdd = hostAddress.getHostAddress();
+        this.socket = new Socket();
     }
 
     public void CloseSocket() {
@@ -27,8 +28,8 @@ public class ClientClass extends Thread{
     public void run() {
         try {
             socket.connect(new InetSocketAddress(hostAdd, 8888), 500);
-            //sendReceive = new MainActivity.SendReceive(socket);
-            //sendReceive.start();
+            sendReceive = new SendReceive(socket);
+            sendReceive.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

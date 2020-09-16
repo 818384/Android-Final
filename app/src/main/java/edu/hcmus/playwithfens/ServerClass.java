@@ -7,6 +7,7 @@ import java.net.Socket;
 public class ServerClass extends Thread {
     private Socket socket;
     private ServerSocket serverSocket;
+    private SendReceive sendReceive;
 
     public void CloseSocket() {
         try {
@@ -22,8 +23,8 @@ public class ServerClass extends Thread {
         try {
             serverSocket = new ServerSocket(8888);
             socket = serverSocket.accept();
-            //sendReceive = new SendReceive(socket);
-            //sendReceive.start();
+            sendReceive = new SendReceive(socket);
+            sendReceive.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

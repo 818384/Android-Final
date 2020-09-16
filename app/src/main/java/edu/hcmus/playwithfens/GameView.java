@@ -1,25 +1,36 @@
 package edu.hcmus.playwithfens;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.RectF;
-import android.icu.text.SymbolTable;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
+import android.os.Message;
 import android.util.DisplayMetrics;
-import android.view.DragEvent;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
-import androidx.constraintlayout.solver.state.Dimension;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GameView extends SurfaceView implements Runnable {
@@ -28,7 +39,7 @@ public class GameView extends SurfaceView implements Runnable {
     //private GameLoopThread gameLoopThread;
     private Thread thread;
     private boolean firstStart = true;
-    private int gameState = 1; // 1 Splash State, 2 Play.
+    private int gameState = 0; // 1 Splash State, 2 Play.
     private int delay = 0;
     private MotionEvent eventGameView;
     private float x;
@@ -55,24 +66,52 @@ public class GameView extends SurfaceView implements Runnable {
     private int widthScreen;
     private int heightScreen;
     private float YDes = 0.0f;
-    private int stepGame = 1; // Di chuyển các chiến hạm.
+    private int stepGame = 0; // Di chuyển các chiến hạm.
     private float xMsg = 0;
     private boolean changBackground = false;
+
+    private BroadcastReceiver mReceiver;
+    private WifiManager wifiManager;
+    private WifiP2pManager mManager;
+    private WifiP2pManager.Channel mChannel;
+    private IntentFilter mIntentFilter;
+    private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+    private String[] deviceNameArray;
+    private WifiP2pDevice[] deviceArray;
+    static final int MESSAGE_READ = 1;
+    private GameObject btnDiscovery;
+    private Bitmap discovery;
+    private Bitmap discoveryStart;
+    private Bitmap discoveryFailed;
+    private ArrayList<GameObject> arrayButtonDevice = new ArrayList<GameObject>();
+
+    private ServerClass serverClass;
+    private ClientClass clientClass;
+    private SendReceive sendReceive;
+
 
     public GameView(Context context, MainActivity activity) {
         super(activity);
         this.activity = activity;
         this.context = context;
 
-        // Khởi tạo màn hình tìm kiếm đối thủ.
-        // Khởi tạo màn khởi đầu.
+        BitmapFactory.Options option = new BitmapFactory.Options();
+        option.inMutable = true;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         this.activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         this.widthScreen = displayMetrics.widthPixels;
         this.heightScreen = displayMetrics.heightPixels;
-        BitmapFactory.Options option = new BitmapFactory.Options();
-        option.inMutable = true;
 
+        // Khởi tạo màn hình tìm kiếm đối thủ.
+        exqListener();
+        discovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discovery, option);
+        discoveryStart = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoverystart, option);
+        discoveryFailed = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoveryfailed, option);
+        System.out.println(this.widthScreen + " - " + this.heightScreen);
+        btnDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 15, discovery);
+
+
+        // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.background, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
         backgroundGame = new GameObject(0, 0, background);
@@ -187,16 +226,26 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = getHolder().lockCanvas();
             RectF dst = new RectF(0, 0, 0 + getWidth(), 0 + getHeight());
             canvas.drawBitmap(backgroundGame.getBitmap(), null, dst, null);
-            for (GameObject ship : arrayShip) {
-                if (ship.isLive()) {
-                    RectF dstShip = ship.getDstRectF();
-                    canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
-                }
-            }
+
 
             switch (stepGame) {
+                case 0:// kết nối.
+                    canvas.drawBitmap(btnDiscovery.getBitmap(), null, btnDiscovery.getDstRectF(), null);
+                    if (arrayButtonDevice.size() > 0){
+                        System.out.println("Get size mang dien thoai > 0: " + arrayButtonDevice.size());
+                        for (GameObject buttonDeviceName : arrayButtonDevice){
+                            canvas.drawBitmap(buttonDeviceName.getBitmap(), null, buttonDeviceName.getDstRectF(), null);
+                        }
+                    }
+                    break;
                 case 1:
                     canvas.drawBitmap(btnStart.getBitmap(), null, btnStart.getDstRectF(), null);
+                    for (GameObject ship : arrayShip) {
+                        if (ship.isLive()) {
+                            RectF dstShip = ship.getDstRectF();
+                            canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
+                        }
+                    }
                     break;
                 case 2:
                     //do{
@@ -223,6 +272,12 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void update() {
         switch (stepGame) {
+            case 0:
+                if (btnDiscovery.checkIsCollitionPoint(x, y) && btnDiscovery.isLive()){
+                    eventButtonDiscovery();
+                    btnDiscovery.setLive(false);
+                }
+                break;
             case 1:
                 if (btnStart.checkIsCollitionPoint(x, y)) {
                     stepGame = 2;
@@ -284,48 +339,19 @@ public class GameView extends SurfaceView implements Runnable {
         }
     }
 
-    // Bật tường lửa.
-    private void TurnOnFireWall(boolean valueFireWall) {
-        if (valueFireWall) {
-            backgroundGame.setBitmap(background2);
-            rocket.setyDead(this.heightScreen / 2);
-        } else {
-            backgroundGame.setBitmap(background);
-        }
-    }
-
-    private void sleep() {
-        try {
-            Thread.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void resume() {
-        isPlaying = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public void pause() {
-        try {
-            isPlaying = false;
-            thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         synchronized (getHolder()) {
             switch (gameState) {
-
+                case 0:
+                    if (event.getAction() == MotionEvent.ACTION_UP && btnDiscovery.isLive()) {
+                        x = event.getX();
+                        y = event.getY();
+                        System.out.println("TouchEvent button Discovery");
+                    }
+                    break;
                 case 1://Welcome Screen
                     gameState = 2;
-
                     break;
                 case 2:// Play game
                     //ArrayList<GameObject> arrayShip = gamePlayState.getArrayShip();
@@ -376,6 +402,43 @@ public class GameView extends SurfaceView implements Runnable {
         return true;
     }
 
+    // Bật tường lửa.
+    private void TurnOnFireWall(boolean valueFireWall) {
+        if (valueFireWall) {
+            backgroundGame.setBitmap(background2);
+            rocket.setyDead(this.heightScreen / 2);
+        } else {
+            backgroundGame.setBitmap(background);
+        }
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resume() {
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity);
+        this.activity.registerReceiver(mReceiver, mIntentFilter);
+        isPlaying = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    public void pause() {
+        try {
+            this.activity.unregisterReceiver(mReceiver);
+            isPlaying = false;
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 //    @SuppressLint("WrongCall")
 //    @Override
 //    protected void onDraw(Canvas canvas) {
@@ -416,11 +479,200 @@ public class GameView extends SurfaceView implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Đang chạy nè");
+        //System.out.println("Đang chạy nè");
         while (isPlaying) {
             update();
             draw();
             sleep();
         }
     }
+
+    public Bitmap textToBitmap(String text, float textSize, int textColor) {
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setTextSize(textSize);
+        paint.setColor(textColor);
+        paint.setTextAlign(Paint.Align.LEFT);
+        float baseline = -paint.ascent(); // ascent() is negative
+//        int width = (int) (paint.measureText(text) + 0.5f); // round
+//        int height = (int) (baseline + paint.descent() + 0.5f);
+        int width = discovery.getWidth();
+        int height = discovery.getHeight();
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(image);
+        canvas.drawText(text, 0, baseline, paint);
+        return image;
+    }
+
+    /*----------------------------------------- CONNECT WIFI AND SYNC DATA -----------------------------------------*/
+    private void exqListener() {
+
+        wifiManager = (WifiManager) this.activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        mManager = (WifiP2pManager) this.activity.getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mManager.initialize(this.context, this.activity.getMainLooper(), null);
+
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity);
+        mIntentFilter = new IntentFilter();
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+
+
+//        btnSend.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String msg = writeMsg.getText().toString();
+//                byte[] ms = msg.getBytes();
+//                sendReceive.write(ms);
+//            }
+//        });
+//        final WifiP2pDevice device = deviceArray[0];
+//        WifiP2pConfig config = new WifiP2pConfig();
+//        config.deviceAddress = device.deviceAddress;
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_WIFI_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_NETWORK_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_MEDIA_LOCATION}, 1);
+
+
+        if (ActivityCompat.checkSelfPermission(this.context.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+//        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+//            @Override
+//            public void onSuccess() {
+//                Toast.makeText(context.getApplicationContext(), "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+//                //checkGamePlay = true;
+//            }
+//
+//            @Override
+//            public void onFailure(int reason) {
+//                Toast.makeText(context.getApplicationContext(), "Not Connected", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+    }
+
+//    private void initialWork() {
+//        btnOnOff = (Button) findViewById(R.id.onOff);
+//        btnDiscovery = (Button) findViewById(R.id.discover);
+//        btnSend = (Button) findViewById(R.id.sendButton);
+//        listView = (ListView) findViewById(R.id.peerListView);
+//        read_msg_box = (TextView) findViewById(R.id.readMsg);
+//        connectionStatus = (TextView) findViewById(R.id.connectionStatus);
+//        writeMsg = (EditText) findViewById(R.id.writeMsg);
+//        writeMsg.setText("asdasd");
+//
+//
+//        btnOnOff.setEnabled(false);
+//
+//        wifiManager = (WifiManager) this.activity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//
+//        mManager = (WifiP2pManager) this.activity.getSystemService(Context.WIFI_P2P_SERVICE);
+//        mChannel = mManager.initialize(this.context, this.activity.getMainLooper(), null);
+//
+//        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity);
+//        mIntentFilter = new IntentFilter();
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+//        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+//    }
+
+    private void eventButtonDiscovery(){
+        System.out.println("Event button Discovery");
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        if (ActivityCompat.checkSelfPermission(this.context.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    //connectionStatus.setText("Discovery Started");
+                    btnDiscovery.setBitmap(discoveryStart);
+                }
+
+                @Override
+                public void onFailure(int i) {
+                    //connectionStatus.setText("Discovery Starting Failed");
+                    btnDiscovery.setBitmap(discoveryFailed);
+                }
+            });
+        }
+    }
+
+    WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            if (!peerList.getDeviceList().equals(peers)) {
+                System.out.println("Vào hàm");
+                peers.clear();
+                peers.addAll(peerList.getDeviceList());
+                deviceNameArray = new String[peerList.getDeviceList().size()];
+                deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
+                int index = 0;
+
+                for (WifiP2pDevice device : peerList.getDeviceList()) {
+                    deviceNameArray[index] = device.deviceName;
+                    deviceArray[index] = device;
+                    System.out.println("Đã thấy: " + device.deviceName);
+                    Bitmap newDeviceName = textToBitmap(device.deviceName, 16, 1);
+                    GameObject buttonDevice = new GameObject(500, 500, newDeviceName);
+                    arrayButtonDevice.add(buttonDevice);
+                    index++;
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(context.getApplicationContext(),
+                        android.R.layout.simple_list_item_1, deviceNameArray);
+                //listView.setAdapter(adapter);
+            }
+
+            if (peers.size() == 0) {
+                Toast.makeText(context.getApplicationContext(), "No Device Found", Toast.LENGTH_SHORT);
+                return;
+            }
+        }
+    };
+
+    WifiP2pManager.ConnectionInfoListener connectionInfoListener = new WifiP2pManager.ConnectionInfoListener()
+    {
+        @Override
+        public void onConnectionInfoAvailable(WifiP2pInfo info) {
+            final InetAddress groupOwnerAddress = info.groupOwnerAddress;
+
+            if (info.groupFormed && info.isGroupOwner) {
+                //connectionStatus.setText("Host");
+                serverClass = new ServerClass();
+                serverClass.start();
+                //btnOnOff.setEnabled(true);
+
+            } else if (info.groupFormed) {
+                //connectionStatus.setText("Client");
+                clientClass = new ClientClass(groupOwnerAddress);
+                clientClass.start();
+                //btnOnOff.setEnabled(true);
+            }
+        }
+    };
+
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message msg) {
+            switch (msg.what) {
+                case MESSAGE_READ:
+                    byte[] readBuff = (byte[]) msg.obj;
+                    String tempMsg = new String(readBuff, 0, msg.arg1);
+                    //read_msg_box.setText(tempMsg);
+                    //gameView.setxMsg(Float.valueOf(tempMsg));
+                    break;
+            }
+            return true;
+        }
+    });
 }

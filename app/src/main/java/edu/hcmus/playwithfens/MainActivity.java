@@ -258,7 +258,7 @@ public class MainActivity extends Activity {
 
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
                         android.R.layout.simple_list_item_1, deviceNameArray);
-                listView.setAdapter(adapter);
+                //listView.setAdapter(adapter);
             }
 
             if (peers.size() == 0) {
@@ -292,7 +292,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
+        //mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
         //registerReceiver(mReceiver, mIntentFilter);
         gameView.resume();
     }
