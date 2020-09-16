@@ -232,7 +232,7 @@ public class MainActivity extends Activity {
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
 
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
+        //mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -240,33 +240,34 @@ public class MainActivity extends Activity {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
     }
 
-    WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-        @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            if (!peerList.getDeviceList().equals(peers)) {
-                peers.clear();
-                peers.addAll(peerList.getDeviceList());
-                deviceNameArray = new String[peerList.getDeviceList().size()];
-                deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
-                int index = 0;
-
-                for (WifiP2pDevice device : peerList.getDeviceList()) {
-                    deviceNameArray[index] = device.deviceName;
-                    deviceArray[index] = device;
-                    index++;
-                }
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
-                        android.R.layout.simple_list_item_1, deviceNameArray);
-                //listView.setAdapter(adapter);
-            }
-
-            if (peers.size() == 0) {
-                Toast.makeText(getApplicationContext(), "No Device Found", Toast.LENGTH_SHORT);
-                return;
-            }
-        }
-    };
+//    WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
+//        @Override
+//        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+//            System.out.println("Vào hàm ngoai");
+//            if (!peerList.getDeviceList().equals(peers)) {
+//                peers.clear();
+//                peers.addAll(peerList.getDeviceList());
+//                deviceNameArray = new String[peerList.getDeviceList().size()];
+//                deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
+//                int index = 0;
+//
+//                for (WifiP2pDevice device : peerList.getDeviceList()) {
+//                    deviceNameArray[index] = device.deviceName;
+//                    deviceArray[index] = device;
+//                    index++;
+//                }
+//
+//                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
+//                        android.R.layout.simple_list_item_1, deviceNameArray);
+//                //listView.setAdapter(adapter);
+//            }
+//
+//            if (peers.size() == 0) {
+//                Toast.makeText(getApplicationContext(), "No Device Found", Toast.LENGTH_SHORT);
+//                return;
+//            }
+//        }
+//    };
 
     WifiP2pManager.ConnectionInfoListener connectionInfoListener = new WifiP2pManager.ConnectionInfoListener()
     {

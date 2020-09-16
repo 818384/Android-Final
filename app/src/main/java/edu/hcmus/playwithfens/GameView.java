@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.net.wifi.WifiManager;
@@ -232,7 +233,6 @@ public class GameView extends SurfaceView implements Runnable {
                 case 0:// kết nối.
                     canvas.drawBitmap(btnDiscovery.getBitmap(), null, btnDiscovery.getDstRectF(), null);
                     if (arrayButtonDevice.size() > 0){
-                        System.out.println("Get size mang dien thoai > 0: " + arrayButtonDevice.size());
                         for (GameObject buttonDeviceName : arrayButtonDevice){
                             canvas.drawBitmap(buttonDeviceName.getBitmap(), null, buttonDeviceName.getDstRectF(), null);
                         }
@@ -421,7 +421,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     public void resume() {
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity);
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity, this);
         this.activity.registerReceiver(mReceiver, mIntentFilter);
         isPlaying = true;
         thread = new Thread(this);
@@ -490,7 +490,7 @@ public class GameView extends SurfaceView implements Runnable {
     public Bitmap textToBitmap(String text, float textSize, int textColor) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
-        paint.setColor(textColor);
+        paint.setColor(Color.BLACK);
         paint.setTextAlign(Paint.Align.LEFT);
         float baseline = -paint.ascent(); // ascent() is negative
 //        int width = (int) (paint.measureText(text) + 0.5f); // round
@@ -511,7 +511,7 @@ public class GameView extends SurfaceView implements Runnable {
         mManager = (WifiP2pManager) this.activity.getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this.context, this.activity.getMainLooper(), null);
 
-        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity);
+        mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this.activity, this);
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
@@ -549,7 +549,7 @@ public class GameView extends SurfaceView implements Runnable {
 //        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
 //            @Override
 //            public void onSuccess() {
-//                Toast.makeText(context.getApplicationContext(), "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context.getApplicationContext(), "Connected to " + arrayButtonDevice.size(), Toast.LENGTH_SHORT).show();
 //                //checkGamePlay = true;
 //            }
 //
@@ -610,8 +610,8 @@ public class GameView extends SurfaceView implements Runnable {
     WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            if (!peerList.getDeviceList().equals(peers)) {
                 System.out.println("Vào hàm");
+            if (!peerList.getDeviceList().equals(peers)) {
                 peers.clear();
                 peers.addAll(peerList.getDeviceList());
                 deviceNameArray = new String[peerList.getDeviceList().size()];
@@ -622,7 +622,7 @@ public class GameView extends SurfaceView implements Runnable {
                     deviceNameArray[index] = device.deviceName;
                     deviceArray[index] = device;
                     System.out.println("Đã thấy: " + device.deviceName);
-                    Bitmap newDeviceName = textToBitmap(device.deviceName, 16, 1);
+                    Bitmap newDeviceName = textToBitmap(device.deviceName, 16, 22);
                     GameObject buttonDevice = new GameObject(500, 500, newDeviceName);
                     arrayButtonDevice.add(buttonDevice);
                     index++;

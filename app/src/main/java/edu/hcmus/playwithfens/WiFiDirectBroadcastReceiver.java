@@ -17,12 +17,14 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private MainActivity mActivity;
+    private GameView gameView;
     private boolean checkSend = false;
 
-    public WiFiDirectBroadcastReceiver(WifiP2pManager mManager, WifiP2pManager.Channel mChannel, MainActivity mActivity) {
+    public WiFiDirectBroadcastReceiver(WifiP2pManager mManager, WifiP2pManager.Channel mChannel, MainActivity mActivity, GameView gameView) {
         this.mManager = mManager;
         this.mChannel = mChannel;
         this.mActivity = mActivity;
+        this.gameView = gameView;
     }
 
     @Override
@@ -42,7 +44,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 if (ActivityCompat.checkSelfPermission(mActivity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(context, "okie", Toast.LENGTH_SHORT).show();
                     checkSend = true;
-                    mManager.requestPeers(mChannel, mActivity.peerListListener);
+                    mManager.requestPeers(mChannel, gameView.peerListListener);
                 } else {
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
@@ -53,7 +55,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.CHANGE_NETWORK_STATE}, 1);
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
                     ActivityCompat.requestPermissions((Activity) mActivity.getApplicationContext(), new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
-                    mManager.requestPeers(mChannel, mActivity.peerListListener);
+                    mManager.requestPeers(mChannel, gameView.peerListListener);
                 }
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
