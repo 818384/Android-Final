@@ -4,15 +4,23 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.logging.Handler;
 
 public class ClientClass extends Thread{
     private Socket socket;
     private String hostAdd;
     private SendReceive sendReceive;
+    private android.os.Handler handler;
 
     public ClientClass(InetAddress hostAddress) {
         this.hostAdd = hostAddress.getHostAddress();
         this.socket = new Socket();
+    }
+
+    public ClientClass(InetAddress hostAddress, android.os.Handler handler) {
+        this.hostAdd = hostAddress.getHostAddress();
+        this.socket = new Socket();
+        this.handler = handler;
     }
 
     public void CloseSocket() {
@@ -27,11 +35,15 @@ public class ClientClass extends Thread{
     @Override
     public void run() {
         try {
-            socket.connect(new InetSocketAddress(hostAdd, 8888), 500);
-            sendReceive = new SendReceive(socket);
+            socket.connect(new InetSocketAddress(hostAdd, 8888), 2000);
+            sendReceive = new SendReceive(socket, handler);
             sendReceive.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public SendReceive getSendReceive(){
+        return sendReceive;
     }
 }

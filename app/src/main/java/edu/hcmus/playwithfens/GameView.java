@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.net.wifi.WifiManager;
@@ -231,10 +232,12 @@ public class GameView extends SurfaceView implements Runnable {
 
             switch (stepGame) {
                 case 0:// kết nối.
-                    canvas.drawBitmap(btnDiscovery.getBitmap(), null, btnDiscovery.getDstRectF(), null);
+                    if (btnDiscovery.isLive())
+                        canvas.drawBitmap(btnDiscovery.getBitmap(), null, btnDiscovery.getDstRectF(), null);
                     if (arrayButtonDevice.size() > 0){
                         for (GameObject buttonDeviceName : arrayButtonDevice){
-                            canvas.drawBitmap(buttonDeviceName.getBitmap(), null, buttonDeviceName.getDstRectF(), null);
+                            if (buttonDeviceName.isLive())
+                                canvas.drawBitmap(buttonDeviceName.getBitmap(), null, buttonDeviceName.getDstRectF(), null);
                         }
                     }
                     break;
@@ -295,6 +298,13 @@ public class GameView extends SurfaceView implements Runnable {
                         ship.setCheckLock(true);
                     }
                     System.out.println("STEP GAME = " + stepGame);
+                }
+                if (serverClass != null){
+                    if (serverClass.getIsConnectedToClient()){
+                        serverClass.getSendReceive().write("hi toi la host".getBytes());
+                        System.out.println("Đã gửi đi một gói tin từ Server");
+                        serverClass.setIsConnectedToClient(false);
+                    }
                 }
                 break;
             case 2:
@@ -509,7 +519,7 @@ public class GameView extends SurfaceView implements Runnable {
         int height = discovery.getHeight();
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);
-        canvas.drawText(text, 0, baseline, paint);
+        canvas.drawText(text, width/2, baseline, paint);
         return image;
     }
 
@@ -702,14 +712,28 @@ public class GameView extends SurfaceView implements Runnable {
 
             if (info.groupFormed && info.isGroupOwner) {
                 //connectionStatus.setText("Host");
-                serverClass = new ServerClass();
+                serverClass = new ServerClass(handler);
                 serverClass.start();
+                gameState = 1;
+                stepGame = 1;
+                for (GameObject buttonDevice : arrayButtonDevice){
+                    buttonDevice.setLive(false);
+                }
+                Toast.makeText(context, "HOST", Toast.LENGTH_SHORT).show();
+
                 //btnOnOff.setEnabled(true);
 
             } else if (info.groupFormed) {
                 //connectionStatus.setText("Client");
-                clientClass = new ClientClass(groupOwnerAddress);
+                clientClass = new ClientClass(groupOwnerAddress, handler);
                 clientClass.start();
+                gameState = 1;
+                stepGame = 1;
+                for (GameObject buttonDevice : arrayButtonDevice){
+                    buttonDevice.setLive(false);
+                }
+                Toast.makeText(context, "CLIENT", Toast.LENGTH_SHORT).show();
+                //clientClass.getSendReceive().write("hi toi la client".getBytes());
                 //btnOnOff.setEnabled(true);
             }
         }
@@ -724,6 +748,7 @@ public class GameView extends SurfaceView implements Runnable {
                     String tempMsg = new String(readBuff, 0, msg.arg1);
                     //read_msg_box.setText(tempMsg);
                     //gameView.setxMsg(Float.valueOf(tempMsg));
+                    Toast.makeText(context, tempMsg, Toast.LENGTH_SHORT).show();
                     break;
             }
             return true;
