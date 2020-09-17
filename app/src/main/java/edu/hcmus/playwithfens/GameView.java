@@ -277,6 +277,14 @@ public class GameView extends SurfaceView implements Runnable {
                     eventButtonDiscovery();
                     btnDiscovery.setLive(false);
                 }
+                for (int i = 0; i < arrayButtonDevice.size(); i++){
+                    if (arrayButtonDevice.get(i).checkIsCollitionPoint(x, y) && arrayButtonDevice.get(i).isLive()){
+                        System.out.println("I đuoc dua vao: " + i);
+                        connectDevice(i);
+                        arrayButtonDevice.get(i).setLive(false);
+                        break;
+                    }
+                }
                 break;
             case 1:
                 if (btnStart.checkIsCollitionPoint(x, y)) {
@@ -339,12 +347,14 @@ public class GameView extends SurfaceView implements Runnable {
         }
     }
 
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         synchronized (getHolder()) {
             switch (gameState) {
                 case 0:
-                    if (event.getAction() == MotionEvent.ACTION_UP && btnDiscovery.isLive()) {
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
                         x = event.getX();
                         y = event.getY();
                         System.out.println("TouchEvent button Discovery");
@@ -491,7 +501,7 @@ public class GameView extends SurfaceView implements Runnable {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
         paint.setColor(Color.BLACK);
-        paint.setTextAlign(Paint.Align.LEFT);
+        paint.setTextAlign(Paint.Align.CENTER);
         float baseline = -paint.ascent(); // ascent() is negative
 //        int width = (int) (paint.measureText(text) + 0.5f); // round
 //        int height = (int) (baseline + paint.descent() + 0.5f);
@@ -531,21 +541,21 @@ public class GameView extends SurfaceView implements Runnable {
 //        final WifiP2pDevice device = deviceArray[0];
 //        WifiP2pConfig config = new WifiP2pConfig();
 //        config.deviceAddress = device.deviceAddress;
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_WIFI_STATE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_NETWORK_STATE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
-        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_MEDIA_LOCATION}, 1);
-
-
-        if (ActivityCompat.checkSelfPermission(this.context.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_WIFI_STATE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_NETWORK_STATE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
+//        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_MEDIA_LOCATION}, 1);
+//
+//
+//        if (ActivityCompat.checkSelfPermission(this.context.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        }
 //        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
 //            @Override
 //            public void onSuccess() {
@@ -607,6 +617,49 @@ public class GameView extends SurfaceView implements Runnable {
         }
     }
 
+    private void connectDevice(int index) {
+        final WifiP2pDevice device = deviceArray[index];
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = device.deviceAddress;
+        System.out.println("Đang cố kết nối với: " + device.deviceName);
+
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_WIFI_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_NETWORK_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.CHANGE_WIFI_MULTICAST_STATE}, 1);
+        ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_MEDIA_LOCATION}, 1);
+
+
+        if (ActivityCompat.checkSelfPermission(this.activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        mManager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(activity.getApplicationContext(), "Connected to " + device.deviceName, Toast.LENGTH_SHORT).show();
+                //checkGamePlay = true;
+//                        if(checkGamePlay){
+//                            gameView = new GameView(getApplicationContext(), MainActivity.this);
+//                            setContentView(gameView);
+//                            btnSend.callOnClick();
+//                            System.out.println("Qua man choi");
+//
+//                        }
+
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Toast.makeText(activity.getApplicationContext(), "Not Connected", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
@@ -616,13 +669,14 @@ public class GameView extends SurfaceView implements Runnable {
                 peers.addAll(peerList.getDeviceList());
                 deviceNameArray = new String[peerList.getDeviceList().size()];
                 deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
+                arrayButtonDevice.clear();
                 int index = 0;
 
                 for (WifiP2pDevice device : peerList.getDeviceList()) {
                     deviceNameArray[index] = device.deviceName;
                     deviceArray[index] = device;
                     System.out.println("Đã thấy: " + device.deviceName);
-                    Bitmap newDeviceName = textToBitmap(device.deviceName, 16, 22);
+                    Bitmap newDeviceName = textToBitmap(device.deviceName, 35, 22);
                     GameObject buttonDevice = new GameObject(500, 500, newDeviceName);
                     arrayButtonDevice.add(buttonDevice);
                     index++;
