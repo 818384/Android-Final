@@ -86,6 +86,8 @@ public class GameView extends SurfaceView implements Runnable {
     private Bitmap discoveryStart;
     private Bitmap discoveryFailed;
     private ArrayList<GameObject> arrayButtonDevice = new ArrayList<GameObject>();
+    private ArrayList<GameObject> arrayShipEnemy = new ArrayList<GameObject>();
+    private GameObject rocketEnemy;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -161,7 +163,6 @@ public class GameView extends SurfaceView implements Runnable {
 //            }
             GameObject ship = new GameObject(x, y, shipBitmap);
             arrayShip.add(ship);
-            System.out.println("Đang chuẩn bị game" + i);
         }
 //        gameLoopThread = new GameLoopThread(this);
 //
@@ -245,8 +246,7 @@ public class GameView extends SurfaceView implements Runnable {
                     canvas.drawBitmap(btnStart.getBitmap(), null, btnStart.getDstRectF(), null);
                     for (GameObject ship : arrayShip) {
                         if (ship.isLive()) {
-                            RectF dstShip = ship.getDstRectF();
-                            canvas.drawBitmap(ship.getBitmap(), null, dstShip, null);
+                            canvas.drawBitmap(ship.getBitmap(), null, ship.getDstRectF(), null);
                         }
                     }
                     break;
@@ -260,6 +260,14 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                     if (btnFeature2.isLive()){
                         canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
+                    }
+                    if (arrayShipEnemy.size() > 0){
+                        System.out.println("Tau chien dich co so luong: " + arrayShipEnemy.size());
+                        for (GameObject ship : arrayShipEnemy) {
+                            if (ship.isLive()) {
+                                canvas.drawBitmap(ship.getBitmap(), null, ship.getDstRectF(), null);
+                            }
+                        }
                     }
                     //System.out.println(rocket.getY());
                     //}while (rocket.run() >= YDes);
@@ -282,7 +290,6 @@ public class GameView extends SurfaceView implements Runnable {
                 }
                 for (int i = 0; i < arrayButtonDevice.size(); i++){
                     if (arrayButtonDevice.get(i).checkIsCollitionPoint(x, y) && arrayButtonDevice.get(i).isLive()){
-                        System.out.println("I đuoc dua vao: " + i);
                         connectDevice(i);
                         arrayButtonDevice.get(i).setLive(false);
                         break;
@@ -299,15 +306,29 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                     System.out.println("STEP GAME = " + stepGame);
                 }
-                if (serverClass != null){
-                    if (serverClass.getIsConnectedToClient()){
-                        serverClass.getSendReceive().write("hi toi la host".getBytes());
-                        System.out.println("Đã gửi đi một gói tin từ Server");
-                        serverClass.setIsConnectedToClient(false);
-                    }
-                }
+//                if (serverClass != null){
+//                    if (serverClass.getIsConnectedToClient()){
+//                        serverClass.getSendReceive().write("hi toi la host".getBytes());
+//                        System.out.println("Đã gửi đi một gói tin từ Server");
+//                        serverClass.setIsConnectedToClient(false);
+//                    }
+//                }
+//                if (clientClass != null){
+//                    if (clientClass.getIsConnectedToServer()){
+//                        clientClass.getSendReceive().write(SendData().getBytes());
+//                        System.out.println("Đã gửi đi một gói tin từ Client " + SendData());
+//                        clientClass.setIsConnectedToServer(false);
+//                    }
+//                }
                 break;
             case 2:
+                if (clientClass != null){
+                    if (clientClass.getIsConnectedToServer()){
+                        clientClass.getSendReceive().write(SendData().getBytes());
+                        System.out.println("Đã gửi đi một gói tin từ Client " + SendData());
+                        clientClass.setIsConnectedToServer(false);
+                    }
+                }
                 // Bật tính năng 1: Qua tường lửa thì không thấy tên lửa.
                 if (btnFeature1.checkIsCollitionPoint(x, y) && btnFeature1.isLive()) {
                     btnFeature1.setLive(false);
@@ -742,16 +763,73 @@ public class GameView extends SurfaceView implements Runnable {
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
-            switch (msg.what) {
+            switch (msg.what)
+            {
                 case MESSAGE_READ:
                     byte[] readBuff = (byte[]) msg.obj;
                     String tempMsg = new String(readBuff, 0, msg.arg1);
                     //read_msg_box.setText(tempMsg);
                     //gameView.setxMsg(Float.valueOf(tempMsg));
                     Toast.makeText(context, tempMsg, Toast.LENGTH_SHORT).show();
+                    String[] gameObject = tempMsg.split(";");
+                    System.out.println("So luong gui qua " + gameObject.length);
+                    for (int i = 0; i < gameObject.length; i ++){
+                        System.out.println("Noi dung gui qua " + gameObject[i]);
+                    }
+                    if (gameObject.length > 0){
+                        BitmapFactory.Options option = new BitmapFactory.Options();
+                        option.inMutable = true;
+                        // Lấy tàu.
+                        int indexShip = 1;
+                        for (int i = 0; i < gameObject.length - 3;){
+//                            String[] detailShip = gameObject[i].split("`;`");
+//                            System.out.println("So luong detail " + detailShip.length);
+//                            System.out.println("Noi dung detail " + detailShip[0] + " --- " + detailShip[1] + " --- " + detailShip[2]);
+                            boolean isLive = Boolean.parseBoolean(gameObject[i + 2]);
+                            String nameShip = "ship_enemy" + (indexShip);
+                            int resourceId = getResources().getIdentifier(nameShip, "drawable", context.getPackageName());
+                            Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), resourceId, option);
+//                            System.out.println("ship x: " + Float.parseFloat(detailShip[0]) + "y: " + Float.parseFloat(detailShip[1]) + "live: " + isLive);
+                            GameObject ship = new GameObject(Float.parseFloat(gameObject[i]), Float.parseFloat(gameObject[i + 1]), shipEnemy);
+                            ship.setLive(isLive);
+                            arrayShipEnemy.add(ship);
+                            i += 3;
+                            indexShip++;
+                        }
+                        // Lấy rocket.
+//                        String[] rocketEnemyString = gameObject[gameObject.length - 1].split("`;`");
+//                        System.out.println("lay rocket string" + gameObject[gameObject.length - 1]);
+//                        System.out.println("x: " + rocketEnemyString[0] + "y: " + rocketEnemyString[1] + "live: " + rocketEnemyString[2]);
+
+                        try{
+                            float xRocketEnemy = Float.parseFloat(gameObject[gameObject.length - 3]);
+//                            System.out.println("xRocketEnemy" + xRocketEnemy);
+                            float yRocketEnemy = Float.parseFloat(gameObject[gameObject.length - 2]);
+//                            System.out.println("yRocketEnemy" + yRocketEnemy);
+                            Bitmap rocket100Enemy = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100_enemy, option);
+                            rocketEnemy = new GameObject(xRocketEnemy, yRocketEnemy, rocket100Enemy);
+                            boolean isLive = Boolean.valueOf(gameObject[gameObject.length - 1]);
+                            rocketEnemy.setLive(isLive);
+                        }catch (NumberFormatException e){
+                            e.printStackTrace();
+                        }
+
+                    }
                     break;
             }
             return true;
         }
     });
+
+    private String SendData(){
+        String data = "";
+        // Lấy tàu hiện tại.
+        for (GameObject ship : arrayShip){
+            data += ship.getX() + ";" + ship.getY() + ";" + ship.isLive() + ";";
+        }
+        // Lấy rocket hiện tại.
+        data += rocket.getX() + ";" + rocket.getY() + ";" + rocket.isLive();
+
+        return data;
+    }
 }

@@ -10,6 +10,7 @@ public class ClientClass extends Thread{
     private Socket socket;
     private String hostAdd;
     private SendReceive sendReceive;
+    private boolean isConnectedToServer = false;
     private android.os.Handler handler;
 
     public ClientClass(InetAddress hostAddress) {
@@ -35,14 +36,22 @@ public class ClientClass extends Thread{
     @Override
     public void run() {
         try {
-            socket.connect(new InetSocketAddress(hostAdd, 8888), 2000);
+            socket.connect(new InetSocketAddress(hostAdd, 8888), 5000);
             sendReceive = new SendReceive(socket, handler);
             sendReceive.start();
+            if (socket.isConnected()){
+                isConnectedToServer = true;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
+    public boolean getIsConnectedToServer(){
+        return isConnectedToServer;
+    }
+    public void setIsConnectedToServer(boolean isConnectedToServer){
+        this.isConnectedToServer = isConnectedToServer;
+    }
     public SendReceive getSendReceive(){
         return sendReceive;
     }
