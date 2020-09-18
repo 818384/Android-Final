@@ -56,10 +56,10 @@ public class GameObject {
 
     public boolean checkIsCollition(GameObject gameObject)
     {
-        if(this.x < gameObject.getX() + gameObject.getBitmap().getWidth() &&
-                        this.x + this.bitmap.getWidth() > gameObject.getX() &&
-                        this.y + this.bitmap.getHeight() > gameObject.getY() &&
-                        this.y < gameObject.getY() + gameObject.getBitmap().getHeight())
+        if(this.x - bitmap.getWidth() / 2.0f < gameObject.getX() + gameObject.getBitmap().getWidth() &&
+                        this.x - bitmap.getWidth() / 2.0f + this.bitmap.getWidth() > gameObject.getX() &&
+                        this.y - bitmap.getHeight() / 2.0f + this.bitmap.getHeight() > gameObject.getY() &&
+                        this.y - bitmap.getHeight() / 2.0f < gameObject.getY() + gameObject.getBitmap().getHeight())
         {
             return true;
         }
@@ -69,10 +69,10 @@ public class GameObject {
     }
     public boolean checkIsCollitionPoint(float x, float y)
     {
-        if(this.x <= x &&
-                this.x + this.bitmap.getWidth() >= x &&
-                this.y + this.bitmap.getHeight() >= y &&
-                this.y <= y )
+        if(this.x - bitmap.getWidth() / 2.0f <= x &&
+                this.x - bitmap.getWidth() / 2.0f + this.bitmap.getWidth() >= x &&
+                this.y - bitmap.getHeight() / 2.0f + this.bitmap.getHeight() >= y &&
+                this.y - bitmap.getHeight() / 2.0f <= y )
         {
             return true;
         }
@@ -84,6 +84,8 @@ public class GameObject {
     public RectF getDstRectF(){
         float left = (x - bitmap.getWidth() / 2.0f);
         float top = (y - bitmap.getHeight() / 2.0f);
+//        float left = (x);
+//        float top = (y);
         RectF dst = new RectF(left, top, left + bitmap.getWidth(), top + bitmap.getHeight());
         return dst;
     }

@@ -88,6 +88,8 @@ public class GameView extends SurfaceView implements Runnable {
     private ArrayList<GameObject> arrayButtonDevice = new ArrayList<GameObject>();
     private ArrayList<GameObject> arrayShipEnemy = new ArrayList<GameObject>();
     private GameObject rocketEnemy;
+    private boolean hostPlay = true;
+    private boolean clientPlay = true;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -252,17 +254,27 @@ public class GameView extends SurfaceView implements Runnable {
                     break;
                 case 2:
                     //do{
-                    if (rocket.isLive()) {
-                        canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
-                    }
                     if (btnFeature1.isLive()) {
                         canvas.drawBitmap(btnFeature1.getBitmap(), null, btnFeature1.getDstRectF(), null);
                     }
                     if (btnFeature2.isLive()){
                         canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
                     }
+                    if (rocket.isLive()) {
+                        canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
+                    }
+                    if (rocketEnemy != null){
+                        if (rocketEnemy.isLive()) {
+                            canvas.drawBitmap(rocketEnemy.getBitmap(), null, rocketEnemy.getDstRectF(), null);
+                        }
+                    }
+                    for (GameObject ship : arrayShip) {
+                        if (ship.isLive()) {
+                            canvas.drawBitmap(ship.getBitmap(), null, ship.getDstRectF(), null);
+                        }
+                    }
                     if (arrayShipEnemy.size() > 0){
-                        System.out.println("Tau chien dich co so luong: " + arrayShipEnemy.size());
+                        //System.out.println("Tau chien dich co so luong: " + arrayShipEnemy.size());
                         for (GameObject ship : arrayShipEnemy) {
                             if (ship.isLive()) {
                                 canvas.drawBitmap(ship.getBitmap(), null, ship.getDstRectF(), null);
@@ -323,10 +335,19 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
             case 2:
                 if (clientClass != null){
-                    if (clientClass.getIsConnectedToServer()){
+                    if (clientClass.getIsConnectedToServer() && clientPlay){
                         clientClass.getSendReceive().write(SendData().getBytes());
-                        System.out.println("Đã gửi đi một gói tin từ Client " + SendData());
-                        clientClass.setIsConnectedToServer(false);
+                        //System.out.println("Đã gửi đi một gói tin từ Client " + SendData());
+                        //clientClass.setIsConnectedToServer(false);
+                        clientPlay = false;
+                    }
+                }
+                if (serverClass != null){
+                    if (serverClass.getIsConnectedToClient() && hostPlay){
+                        serverClass.getSendReceive().write(SendData().getBytes());
+                        //System.out.println("Đã gửi đi một gói tin từ Server" + SendData());
+                        //serverClass.setIsConnectedToClient(false);
+                        hostPlay = false;
                     }
                 }
                 // Bật tính năng 1: Qua tường lửa thì không thấy tên lửa.
@@ -366,7 +387,10 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 } else {
                     rocket.run();
-                    for (GameObject ship : arrayShip) {
+                    if (serverClass != null){
+                        hostPlay = true;
+                    }
+                    for (GameObject ship : arrayShipEnemy) {
                         if (rocket.checkIsCollition(ship)) {
                             System.out.println("VA CHAM");
                             rocket.setLive(false);
@@ -455,7 +479,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void sleep() {
         try {
-            Thread.sleep(5);
+            Thread.sleep(17);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -771,6 +795,7 @@ public class GameView extends SurfaceView implements Runnable {
                     //read_msg_box.setText(tempMsg);
                     //gameView.setxMsg(Float.valueOf(tempMsg));
                     Toast.makeText(context, tempMsg, Toast.LENGTH_SHORT).show();
+                    arrayShipEnemy.clear();
                     String[] gameObject = tempMsg.split(";");
                     System.out.println("So luong gui qua " + gameObject.length);
                     for (int i = 0; i < gameObject.length; i ++){
@@ -790,7 +815,7 @@ public class GameView extends SurfaceView implements Runnable {
                             int resourceId = getResources().getIdentifier(nameShip, "drawable", context.getPackageName());
                             Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), resourceId, option);
 //                            System.out.println("ship x: " + Float.parseFloat(detailShip[0]) + "y: " + Float.parseFloat(detailShip[1]) + "live: " + isLive);
-                            GameObject ship = new GameObject(Float.parseFloat(gameObject[i]), Float.parseFloat(gameObject[i + 1]), shipEnemy);
+                            GameObject ship = new GameObject(Float.parseFloat(gameObject[i]), getYOfPointSymmetry(Float.parseFloat(gameObject[i + 1])), shipEnemy);
                             ship.setLive(isLive);
                             arrayShipEnemy.add(ship);
                             i += 3;
@@ -806,10 +831,17 @@ public class GameView extends SurfaceView implements Runnable {
 //                            System.out.println("xRocketEnemy" + xRocketEnemy);
                             float yRocketEnemy = Float.parseFloat(gameObject[gameObject.length - 2]);
 //                            System.out.println("yRocketEnemy" + yRocketEnemy);
-                            Bitmap rocket100Enemy = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100_enemy, option);
-                            rocketEnemy = new GameObject(xRocketEnemy, yRocketEnemy, rocket100Enemy);
                             boolean isLive = Boolean.valueOf(gameObject[gameObject.length - 1]);
-                            rocketEnemy.setLive(isLive);
+                            if (rocketEnemy != null){
+                                rocketEnemy.setX(xRocketEnemy);
+                                rocketEnemy.setY(heightScreen - yRocketEnemy);
+                                rocketEnemy.setLive(isLive);
+                            }
+                            else{
+                                Bitmap rocket100Enemy = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100_enemy, option);
+                                rocketEnemy = new GameObject(xRocketEnemy, heightScreen - yRocketEnemy, rocket100Enemy);
+                                rocketEnemy.setLive(isLive);
+                            }
                         }catch (NumberFormatException e){
                             e.printStackTrace();
                         }
@@ -821,7 +853,7 @@ public class GameView extends SurfaceView implements Runnable {
         }
     });
 
-    private String SendData(){
+    private String SendData() {
         String data = "";
         // Lấy tàu hiện tại.
         for (GameObject ship : arrayShip){
@@ -829,7 +861,6 @@ public class GameView extends SurfaceView implements Runnable {
         }
         // Lấy rocket hiện tại.
         data += rocket.getX() + ";" + rocket.getY() + ";" + rocket.isLive();
-
         return data;
     }
 }
