@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class SendReceive extends Thread {
     private Socket socket;
@@ -17,6 +18,7 @@ public class SendReceive extends Thread {
     private OutputStream outputStream;
     static final int MESSAGE_READ = 1;
     private Handler handler;
+    private boolean keepSend = false;
 
     public SendReceive(Socket skt) {
         socket = skt;
@@ -49,8 +51,13 @@ public class SendReceive extends Thread {
         while (socket != null) {
             try {
                 bytes = inputStream.read(buffer);
-                if (bytes > 0) {
+                //System.out.println("Day la byte: " + bytes);
+                if (bytes > 0 && keepSend) {
                     handler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    keepSend = false;
+                }
+                else if (bytes <= 0){
+                    keepSend = true;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -63,7 +70,12 @@ public class SendReceive extends Thread {
             @Override
             public void run() {
                 try {
-                    outputStream.write(bytes);
+//                    System.out.println("Do dai byte: " + new String(bytes, StandardCharsets.UTF_8));
+//                    String checkLength = new String(bytes, StandardCharsets.UTF_8);
+                    if (keepSend == false){
+                        outputStream.write(bytes);
+                        keepSend = true;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
