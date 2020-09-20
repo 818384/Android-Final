@@ -122,7 +122,7 @@ public class GameView extends SurfaceView implements Runnable {
 
 
         // Khởi tạo màn khởi đầu.
-        background = BitmapFactory.decodeResource(getResources(), R.drawable.background, option);
+        background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
         backgroundGame = new GameObject(0, 0, background);
 
@@ -140,6 +140,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         // Sắp 4 tàu ngẫu nhiên
         ArrayList<Float> arrayTemp = new ArrayList<Float>();
+        Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.orange_ship, option);
         for (int i = 0; i < 4; i++) {
             Random rd = new Random();
             float x, y;
@@ -157,8 +158,8 @@ public class GameView extends SurfaceView implements Runnable {
 
             } while (y < this.heightScreen / 2 || y > this.heightScreen - 50);
             String nameShip = "ship" + (i + 1);
-            int resourceId = getResources().getIdentifier(nameShip, "drawable", this.context.getPackageName());
-            Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), resourceId, option);
+//            int resourceId = getResources().getIdentifier(nameShip, "drawable", this.context.getPackageName());
+//            Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), resourceId, option);
 //            if(xMsg != 0){
 //                GameObject ship = new GameObject(xMsg, y, shipBitmap);
 //                arrayShip.add(ship);
@@ -833,6 +834,7 @@ public class GameView extends SurfaceView implements Runnable {
                         // Lấy tàu.
                         int indexShip = 1;
                         int indexShipE = 0;
+                        Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), R.drawable.green_ship, option);
                         for (int i = 0; i < 12;){
 //                            String[] detailShip = gameObject[i].split("`;`");
 //                            System.out.println("So luong detail " + detailShip.length);
@@ -846,8 +848,8 @@ public class GameView extends SurfaceView implements Runnable {
                             else{
                                 boolean isLive = Boolean.parseBoolean(gameObject[i + 2]);
                                 String nameShip = "ship_enemy" + (indexShip);
-                                int resourceId = getResources().getIdentifier(nameShip, "drawable", context.getPackageName());
-                                Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), resourceId, option);
+//                                int resourceId = getResources().getIdentifier(nameShip, "drawable", context.getPackageName());
+//                                Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), resourceId, option);
 //                            System.out.println("ship x: " + Float.parseFloat(detailShip[0]) + "y: " + Float.parseFloat(detailShip[1]) + "live: " + isLive);
                                 GameObject ship = new GameObject(Float.parseFloat(gameObject[i]), getYOfPointSymmetry(Float.parseFloat(gameObject[i + 1])), shipEnemy);
                                 ship.setLive(isLive);

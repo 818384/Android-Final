@@ -49,6 +49,8 @@ public class GamePlayState {
 
         // Sắp 4 tàu ngẫu nhiên
         ArrayList<Float> arrayTemp = new ArrayList<Float>();
+        Bitmap shipBitmap = BitmapFactory.decodeResource(gameView.getResources(), R.drawable.orange_ship, option);
+
         for (int i = 0; i < 4; i++)
         {
             Random rd = new Random();
@@ -67,8 +69,8 @@ public class GamePlayState {
 
             }while (y < this.heightScreen / 2);
             String nameShip = "ship" + (i + 1);
-            int resourceId = gameView.getResources().getIdentifier(nameShip, "drawable",gameView.getContext().getPackageName());
-            Bitmap shipBitmap = BitmapFactory.decodeResource(gameView.getResources(), resourceId, option);
+//            int resourceId = gameView.getResources().getIdentifier(nameShip, "drawable",gameView.getContext().getPackageName());
+//            Bitmap shipBitmap = BitmapFactory.decodeResource(gameView.getResources(), resourceId, option);
             if(xMsg != 0){
                 GameObject ship = new GameObject(xMsg, y, shipBitmap);
                 arrayShip.add(ship);
