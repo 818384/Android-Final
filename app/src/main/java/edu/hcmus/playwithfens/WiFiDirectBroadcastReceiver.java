@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.widget.Toast;
 
@@ -69,9 +70,23 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             } else {
                 //mActivity.getConnectionStatus().setText("Device Disconnected");
                 Toast.makeText(context, "Device Disconnected", Toast.LENGTH_SHORT).show();
+                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                if (gameView.getGameState() == 2 && gameView.getStepGame() == 2 && wifiManager.isWifiEnabled()){
+                    if (!gameView.isWiner() && !gameView.isLoser()){
+                        gameView.setWiner(true);
+                        gameView.setLoser(false);
+                    }
+                }
+                else if (gameView.getGameState() == 2 && gameView.getStepGame() == 2 && !wifiManager.isWifiEnabled()){
+                    if (!gameView.isWiner() && !gameView.isLoser()){
+                        gameView.setWiner(false);
+                        gameView.setLoser(true);
+                    }
+                }
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // do something.
+            Toast.makeText(context, "WIFI_P2P_THIS_DEVICE_CHANGED_ACTION" + action, Toast.LENGTH_LONG).show();
         }
     }
 

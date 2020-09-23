@@ -17,6 +17,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
@@ -62,6 +63,8 @@ public class GameView extends SurfaceView implements Runnable {
 
     private Bitmap background;
     private Bitmap background2;
+    private Bitmap backgroundWinner;
+    private Bitmap backgroundLoser;
     private GameObject backgroundGame;
     private GameObject rocket;
     private ArrayList<GameObject> arrayShip = new ArrayList<GameObject>();
@@ -98,6 +101,9 @@ public class GameView extends SurfaceView implements Runnable {
     private String play = "";
     private int runPlay = 0;
     private boolean drawShipEnemy = false;
+    private boolean winer = false;
+    private boolean loser = false;
+    private GameObject btnHomeDiscovery;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -128,6 +134,8 @@ public class GameView extends SurfaceView implements Runnable {
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
+        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
+        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
@@ -143,7 +151,9 @@ public class GameView extends SurfaceView implements Runnable {
         btnFeature1 = new GameObject(this.widthScreen / 4, this.heightScreen / 4, feature1);
         Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
-
+        Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
+        btnHomeDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 2, homeDiscovery);
+        btnHomeDiscovery.setLive(false);
         // Sắp 4 tàu ngẫu nhiên
         ArrayList<Float> arrayTemp = new ArrayList<Float>();
         Bitmap shipBitmap = getBitmapFromSvg(getContext(), R.drawable.orange_ship);
@@ -250,8 +260,8 @@ public class GameView extends SurfaceView implements Runnable {
                 case 0:// kết nối.
                     if (btnDiscovery.isLive())
                         canvas.drawBitmap(btnDiscovery.getBitmap(), null, btnDiscovery.getDstRectF(), null);
-                    if (arrayButtonDevice.size() > 0){
-                        for (GameObject buttonDeviceName : arrayButtonDevice){
+                    if (arrayButtonDevice.size() > 0) {
+                        for (GameObject buttonDeviceName : arrayButtonDevice) {
                             if (buttonDeviceName.isLive())
                                 canvas.drawBitmap(buttonDeviceName.getBitmap(), null, buttonDeviceName.getDstRectF(), null);
                         }
@@ -270,13 +280,13 @@ public class GameView extends SurfaceView implements Runnable {
                     if (btnFeature1.isLive()) {
                         canvas.drawBitmap(btnFeature1.getBitmap(), null, btnFeature1.getDstRectF(), null);
                     }
-                    if (btnFeature2.isLive()){
+                    if (btnFeature2.isLive()) {
                         canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
                     }
                     if (rocket.isLive()) {
                         canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
                     }
-                    if (rocketEnemy != null){
+                    if (rocketEnemy != null) {
                         if (rocketEnemy.isLive()) {
                             canvas.drawBitmap(rocketEnemy.getBitmap(), null, rocketEnemy.getDstRectF(), null);
                         }
@@ -295,6 +305,9 @@ public class GameView extends SurfaceView implements Runnable {
                         }
                         drawShipEnemy = false;
                     }
+                    if (btnHomeDiscovery.isLive()) {
+                        canvas.drawBitmap(btnHomeDiscovery.getBitmap(), null, btnHomeDiscovery.getDstRectF(), null);
+                    }
                     //System.out.println(rocket.getY());
                     //}while (rocket.run() >= YDes);
 
@@ -310,12 +323,13 @@ public class GameView extends SurfaceView implements Runnable {
     private void update() {
         switch (stepGame) {
             case 0:
-                if (btnDiscovery.checkIsCollitionPoint(x, y) && btnDiscovery.isLive()){
+                if (btnDiscovery.checkIsCollitionPoint(x, y) && btnDiscovery.isLive()) {
                     eventButtonDiscovery();
                     btnDiscovery.setLive(false);
+                    arrayButtonDevice.clear();
                 }
-                for (int i = 0; i < arrayButtonDevice.size(); i++){
-                    if (arrayButtonDevice.get(i).checkIsCollitionPoint(x, y) && arrayButtonDevice.get(i).isLive()){
+                for (int i = 0; i < arrayButtonDevice.size(); i++) {
+                    if (arrayButtonDevice.get(i).checkIsCollitionPoint(x, y) && arrayButtonDevice.get(i).isLive()) {
                         connectDevice(i);
                         arrayButtonDevice.get(i).setLive(false);
                         break;
@@ -323,6 +337,13 @@ public class GameView extends SurfaceView implements Runnable {
                 }
                 break;
             case 1:
+                winer = false;
+                loser = false;
+                btnHomeDiscovery.setLive(false);
+                for (GameObject ship : arrayShip) {
+                    ship.setLive(true);
+                    ship.setCheckLock(false);
+                }
                 if (btnStart.checkIsCollitionPoint(x, y)) {
                     stepGame = 2;
                     gameState = 2;
@@ -349,21 +370,55 @@ public class GameView extends SurfaceView implements Runnable {
 //                }
                 break;
             case 2:
-                if (clientClass != null){
-                    if (clientClass.getIsConnectedToServer() && clientPlay){
+                if (clientClass != null) {
+                    if (clientClass.getIsConnectedToServer() && clientPlay) {
                         clientClass.getSendReceive().write(SendData().getBytes());
                         //System.out.println("Đã gửi đi một gói tin từ Client " + SendData());
                         //clientClass.setIsConnectedToServer(false);
                         //clientPlay = false;
                     }
                 }
-                if (serverClass != null){
-                    if (serverClass.getIsConnectedToClient() && hostPlay){
+                if (serverClass != null) {
+                    if (serverClass.getIsConnectedToClient() && hostPlay) {
                         serverClass.getSendReceive().write(SendData().getBytes());
                         //System.out.println("Đã gửi đi một gói tin từ Server" + SendData());
                         //serverClass.setIsConnectedToClient(false);
                         //hostPlay = false;
                     }
+                }
+                if (winer) {
+                    rocket.setLive(false);
+                    for (GameObject ship : arrayShip) {
+                        ship.setLive(false);
+                    }
+//                    for (GameObject shipE : arrayShipEnemy) {
+//                        shipE.setLive(false);
+//                    }
+                    arrayShipEnemy.clear();
+                    rocketEnemy.setLive(false);
+                    btnFeature1.setLive(false);
+                    btnFeature2.setLive(false);
+                    backgroundGame.setBitmap(backgroundWinner);
+                    btnHomeDiscovery.setLive(true);
+                    disconnect();
+                    serverClass.CloseSocket();
+                }
+                if (loser) {
+                    rocket.setLive(false);
+                    for (GameObject ship : arrayShip) {
+                        ship.setLive(false);
+                    }
+//                    for (GameObject shipE : arrayShipEnemy) {
+//                        shipE.setLive(false);
+//                    }
+                    arrayShipEnemy.clear();
+                    rocketEnemy.setLive(false);
+                    btnFeature1.setLive(false);
+                    btnFeature2.setLive(false);
+                    backgroundGame.setBitmap(backgroundLoser);
+                    btnHomeDiscovery.setLive(true);
+                    disconnect();
+                    clientClass.CloseSocket();
                 }
                 //clientPlay = !hostPlay;
                 // Bật tính năng 1: Qua tường lửa thì không thấy tên lửa.
@@ -404,7 +459,7 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 } else {
                     /*if (serverClass != null && hostPlay)*/
-                        rocket.run();
+                    rocket.run();
 //                    if (clientClass != null && clientPlay)
 //                        rocket.run();
                     for (GameObject ship : arrayShipEnemy) {
@@ -425,7 +480,7 @@ public class GameView extends SurfaceView implements Runnable {
 //                            }
                         }
                     }
-                    if (rocket.getY() <= 0){
+                    if (rocket.getY() <= 0) {
                         rocket.setLive(false);
                         YDes = 0.0f;
                     }
@@ -433,7 +488,6 @@ public class GameView extends SurfaceView implements Runnable {
                 break;
         }
     }
-
 
 
     @Override
@@ -481,15 +535,18 @@ public class GameView extends SurfaceView implements Runnable {
                         x = event.getX();
                         y = event.getY();
 //                        checkDrag = false;
-                        if (!rocket.isLive()){
+                        if (!rocket.isLive()) {
                             rocket.setLive(true);
-                            if (rocket.isCheckLock()){
+                            if (rocket.isCheckLock()) {
                                 rocket.setCheckLock(false);
                             }
                         }
 //                        for (GameObject ship : arrayShip) {
 //                            ship.setCheckLock(true);
 //                        }
+                        if (btnHomeDiscovery.checkIsCollitionPoint(x, y) && btnHomeDiscovery.isLive()) {
+                            eventButtonHomeDiscovery();
+                        }
                         System.out.println("ACTION_UP");
                         break;
                     }
@@ -603,7 +660,7 @@ public class GameView extends SurfaceView implements Runnable {
         int height = discovery.getHeight();
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);
-        canvas.drawText(text, width/2, baseline, paint);
+        canvas.drawText(text, width / 2, baseline, paint);
         return image;
     }
 
@@ -621,7 +678,6 @@ public class GameView extends SurfaceView implements Runnable {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
 
 
 //        btnSend.setOnClickListener(new View.OnClickListener() {
@@ -690,7 +746,7 @@ public class GameView extends SurfaceView implements Runnable {
 //        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 //    }
 
-    private void eventButtonDiscovery(){
+    private void eventButtonDiscovery() {
         System.out.println("Event button Discovery");
         ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (ActivityCompat.checkSelfPermission(this.context.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -709,6 +765,13 @@ public class GameView extends SurfaceView implements Runnable {
                 }
             });
         }
+    }
+
+    private void eventButtonHomeDiscovery() {
+        backgroundGame.setBitmap(background);
+        btnDiscovery.setLive(true);
+        gameState = 0;
+        stepGame = 0;
     }
 
     private void connectDevice(int index) {
@@ -752,6 +815,35 @@ public class GameView extends SurfaceView implements Runnable {
                 Toast.makeText(activity.getApplicationContext(), "Not Connected", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void disconnect() {
+        //if (mManager != null && mChannel != null) {
+        if (ActivityCompat.checkSelfPermission(this.activity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this.activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        mManager.requestGroupInfo(mChannel, new WifiP2pManager.GroupInfoListener() {
+            @Override
+            public void onGroupInfoAvailable(WifiP2pGroup group) {
+                if (group != null && mManager != null && mChannel != null) {
+                    mManager.removeGroup(mChannel, new WifiP2pManager.ActionListener() {
+
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(context, "removeGroup onSuccess", Toast.LENGTH_SHORT).show();
+                            //Log.d(TAG, "removeGroup onSuccess -");
+                        }
+
+                        @Override
+                        public void onFailure(int reason) {
+                            Toast.makeText(context, "removeGroup onFailure", Toast.LENGTH_SHORT).show();
+                            //Log.d(TAG, "removeGroup onFailure -" + reason);
+                        }
+                    });
+                }
+            }
+        });
+        //}
     }
 
     WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
@@ -959,4 +1051,27 @@ public class GameView extends SurfaceView implements Runnable {
         return bitmap;
     }
 
+    public boolean isWiner() {
+        return winer;
+    }
+
+    public void setWiner(boolean winer) {
+        this.winer = winer;
+    }
+
+    public boolean isLoser() {
+        return loser;
+    }
+
+    public void setLoser(boolean loser) {
+        this.loser = loser;
+    }
+
+    public int getGameState(){
+        return gameState;
+    }
+
+    public int getStepGame(){
+        return stepGame;
+    }
 }
