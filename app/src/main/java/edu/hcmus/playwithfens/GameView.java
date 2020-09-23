@@ -12,12 +12,14 @@ import android.graphics.Color;
 import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
@@ -29,6 +31,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -133,14 +137,17 @@ public class GameView extends SurfaceView implements Runnable {
         // Nút bắt đầu khi sắp tàu xong.
         Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.btn_start, option);
         btnStart = new GameObject(this.widthScreen / 2, this.heightScreen / 2, startButton);
-        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
+        Bitmap feature1 = getBitmapFromSvg(getContext(), R.drawable.firewall);
+//        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
         btnFeature1 = new GameObject(this.widthScreen / 4, this.heightScreen / 4, feature1);
         Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
 
         // Sắp 4 tàu ngẫu nhiên
         ArrayList<Float> arrayTemp = new ArrayList<Float>();
-        Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.orange_ship, option);
+        Bitmap shipBitmap = getBitmapFromSvg(getContext(), R.drawable.orange_ship);
+//        Bitmap shipBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.orange_ship, option);
+
         for (int i = 0; i < 4; i++) {
             Random rd = new Random();
             float x, y;
@@ -834,7 +841,8 @@ public class GameView extends SurfaceView implements Runnable {
                         // Lấy tàu.
                         int indexShip = 1;
                         int indexShipE = 0;
-                        Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), R.drawable.green_ship, option);
+                        Bitmap shipEnemy = getBitmapFromSvg(getContext(), R.drawable.green_ship);
+//                        Bitmap shipEnemy = BitmapFactory.decodeResource(getResources(), R.drawable.green_ship, option);
                         for (int i = 0; i < 12;){
 //                            String[] detailShip = gameObject[i].split("`;`");
 //                            System.out.println("So luong detail " + detailShip.length);
@@ -932,4 +940,15 @@ public class GameView extends SurfaceView implements Runnable {
 
         return data;
     }
+
+    public Bitmap getBitmapFromSvg(Context context, int drawableId) {
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
 }
