@@ -386,6 +386,7 @@ public class GameView extends SurfaceView implements Runnable {
                     if (YDes == 0.0f && y != 0.0f) {
                         YDes = y;
                         YDes = getYOfPointSymmetry(YDes);
+                        rocket.setyDead(YDes);
                         //System.out.println(YDes);
                     }
                     if (y >= YDes && y != 0.0f) {
@@ -407,10 +408,11 @@ public class GameView extends SurfaceView implements Runnable {
 //                    if (clientClass != null && clientPlay)
 //                        rocket.run();
                     for (GameObject ship : arrayShipEnemy) {
-                        if (rocket.checkIsCollition(ship) /*&& rocket.getY() >= YDes - 10 && rocket.getY() <= YDes + 10*/) {
+                        if (rocket.checkIsCollition(ship) && rocket.isLive() && rocket.getY() >= YDes - 10 && rocket.getY() <= YDes + 10) {
                             System.out.println("VA CHAM");
                             rocket.setLive(false);
                             ship.setLive(false);
+                            YDes = 0.0f;
 //                            if (hostPlay){
 //                                play = "client";
 //                                hostPlay = false;
@@ -422,6 +424,10 @@ public class GameView extends SurfaceView implements Runnable {
 //                                clientPlay = false;
 //                            }
                         }
+                    }
+                    if (rocket.getY() <= 0){
+                        rocket.setLive(false);
+                        YDes = 0.0f;
                     }
                 }
                 break;
@@ -475,12 +481,12 @@ public class GameView extends SurfaceView implements Runnable {
                         x = event.getX();
                         y = event.getY();
 //                        checkDrag = false;
-//                        if (!rocket.isLive()){
-//                            rocket.setLive(true);
-//                            if (rocket.isCheckLock()){
-//                                rocket.setCheckLock(false);
-//                            }
-//                        }
+                        if (!rocket.isLive()){
+                            rocket.setLive(true);
+                            if (rocket.isCheckLock()){
+                                rocket.setCheckLock(false);
+                            }
+                        }
 //                        for (GameObject ship : arrayShip) {
 //                            ship.setCheckLock(true);
 //                        }
