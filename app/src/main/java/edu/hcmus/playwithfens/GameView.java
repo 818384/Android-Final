@@ -127,11 +127,12 @@ public class GameView extends SurfaceView implements Runnable {
 
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
-        background2 = BitmapFactory.decodeResource(getResources(), R.drawable.background2, option);
+        background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
-        Bitmap rocketBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100, option);
+        Bitmap rocketBitmap = getBitmapFromSvg(getContext(), R.drawable.rocket_orange);
+//        Bitmap rocketBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100, option);
         rocket = new GameObject(rocketBitmap);
         rocket.setLive(false);
         // Nút bắt đầu khi sắp tàu xong.
@@ -884,7 +885,8 @@ public class GameView extends SurfaceView implements Runnable {
                                     rocketEnemy.setLive(isLive);
                                 }
                                 else{
-                                    Bitmap rocket100Enemy = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100_enemy, option);
+                                    Bitmap rocket100Enemy = getBitmapFromSvg(getContext(), R.drawable.rocket_green);
+//                                    Bitmap rocket100Enemy = BitmapFactory.decodeResource(getResources(), R.drawable.rocket_100_enemy, option);
                                     rocketEnemy = new GameObject(xRocketEnemy, heightScreen - yRocketEnemy, rocket100Enemy);
                                     rocketEnemy.setLive(isLive);
                                 }
