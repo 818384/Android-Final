@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorSpace;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -20,7 +19,6 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
@@ -33,7 +31,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -124,7 +121,8 @@ public class GameView extends SurfaceView implements Runnable {
 
         // Khởi tạo màn hình tìm kiếm đối thủ.
         exqListener();
-        discovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discovery, option);
+        discovery = getBitmapFromSvg(getContext(), R.drawable.btn_discover);
+//        discovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discover, option);
         discoveryStart = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoverystart, option);
         discoveryFailed = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoveryfailed, option);
         System.out.println(this.widthScreen + " - " + this.heightScreen);
@@ -134,8 +132,10 @@ public class GameView extends SurfaceView implements Runnable {
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
-        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
-        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
+        backgroundWinner = background2;
+//        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
+        backgroundLoser = background2;
+//        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
@@ -144,12 +144,14 @@ public class GameView extends SurfaceView implements Runnable {
         rocket = new GameObject(rocketBitmap);
         rocket.setLive(false);
         // Nút bắt đầu khi sắp tàu xong.
-        Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.btn_start, option);
+        Bitmap startButton = getBitmapFromSvg(getContext(), R.drawable.btn_start);
+//        Bitmap startButton = BitmapFactory.decodeResource(getResources(), R.drawable.btn_start, option);
         btnStart = new GameObject(this.widthScreen / 2, this.heightScreen / 2, startButton);
-        Bitmap feature1 = getBitmapFromSvg(getContext(), R.drawable.firewall);
+        Bitmap feature1 = getBitmapFromSvg(getContext(), R.drawable.btn_firewall);
 //        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
         btnFeature1 = new GameObject(this.widthScreen / 4, this.heightScreen / 4, feature1);
-        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
+        Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_shuffle);
+//        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
         Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
         btnHomeDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 2, homeDiscovery);
