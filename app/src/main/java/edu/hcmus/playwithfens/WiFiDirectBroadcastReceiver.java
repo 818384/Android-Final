@@ -72,9 +72,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 Toast.makeText(context, "Device Disconnected", Toast.LENGTH_SHORT).show();
                 WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 if (gameView.getGameState() == 2 && gameView.getStepGame() == 2 && wifiManager.isWifiEnabled()){
-                    if (!gameView.isWiner() && !gameView.isLoser()){
+                    if (/*gameView.isWiner() == false && gameView.isLoser() == false &&*/ gameView.getShipLive() > 0){
                         gameView.setWiner(true);
                         gameView.setLoser(false);
+                    }
+                    else{
+                        gameView.setWiner(false);
+                        gameView.setLoser(true);
                     }
                 }
                 else if (gameView.getGameState() == 2 && gameView.getStepGame() == 2 && !wifiManager.isWifiEnabled()){
