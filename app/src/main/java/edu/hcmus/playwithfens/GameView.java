@@ -147,10 +147,8 @@ public class GameView extends SurfaceView implements Runnable {
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
-        backgroundWinner = background2;
-//        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
-        backgroundLoser = background2;
-//        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
+        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.bg_win, option);
+        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.bg_lose, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
@@ -360,6 +358,11 @@ public class GameView extends SurfaceView implements Runnable {
                 loser = false;
                 fireWall = false;
                 btnHomeDiscovery.setLive(false);
+                btnFeature1.setLive(true);
+                btnFeature1.setCheckLock(false);
+                btnFeature2.setLive(true);
+                shipLive = 4;
+                shipEnemyLive = 4;
                 for (GameObject ship : arrayShip) {
                     ship.setLive(true);
                     ship.setCheckLock(false);
