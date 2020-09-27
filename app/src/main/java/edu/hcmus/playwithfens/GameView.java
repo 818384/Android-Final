@@ -106,6 +106,7 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean fireWall = false;
     private boolean hostSwitchFireWall = false;
     private boolean clientSwitchFireWall = false;
+    private boolean sound = true;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -137,10 +138,10 @@ public class GameView extends SurfaceView implements Runnable {
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
-//        backgroundWinner = background2;
-        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
-//        backgroundLoser = background2;
-        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
+        backgroundWinner = background2;
+//        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
+        backgroundLoser = background2;
+//        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
@@ -157,7 +158,7 @@ public class GameView extends SurfaceView implements Runnable {
         btnFeature1 = new GameObject(this.widthScreen / 2.0f, this.heightScreen / 20, feature1);
         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_shuffle);
 //        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
-        btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
+        btnFeature2 = new GameObject(this.widthScreen - 60, this.heightScreen / 20, feature2);
         Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
         btnHomeDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 2, homeDiscovery);
         btnHomeDiscovery.setLive(false);
@@ -287,9 +288,9 @@ public class GameView extends SurfaceView implements Runnable {
                     if (btnFeature1.isLive()) {
                         canvas.drawBitmap(btnFeature1.getBitmap(), null, btnFeature1.getDstRectF(), null);
                     }
-//                    if (btnFeature2.isLive()) {
-//                        canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
-//                    }
+                    if (btnFeature2.isLive()) {
+                        canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
+                    }
                     if (rocket.isLive() && rocket.getY() != 0) {
                         canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
                     }
@@ -497,10 +498,7 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }
                 if (btnFeature2.checkIsCollitionPoint(x, y) && btnFeature2.isLive()) {
-                    btnFeature2.setLive(false);
-                    for (GameObject ship : arrayShip) {
-                        ship.setCheckLock(false);
-                    }
+                    sound = false;
                 }
                 if (rocket.isLive() && !rocket.isCheckLock()) {
 //                    rocket.setX(x);
