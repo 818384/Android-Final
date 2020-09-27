@@ -104,6 +104,8 @@ public class GameView extends SurfaceView implements Runnable {
     private int shipLive = 4;
     private int shipEnemyLive = 4;
     private boolean fireWall = false;
+    private boolean hostSwitchFireWall = false;
+    private boolean clientSwitchFireWall = false;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -152,7 +154,7 @@ public class GameView extends SurfaceView implements Runnable {
         btnStart = new GameObject(this.widthScreen / 2, this.heightScreen / 2, startButton);
         Bitmap feature1 = getBitmapFromSvg(getContext(), R.drawable.btn_firewall);
 //        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
-        btnFeature1 = new GameObject(this.widthScreen / 4, this.heightScreen / 4, feature1);
+        btnFeature1 = new GameObject(this.widthScreen / 2.0f, this.heightScreen / 20, feature1);
         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_shuffle);
 //        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen / 4 + feature2.getWidth(), this.heightScreen / 4, feature2);
@@ -285,10 +287,10 @@ public class GameView extends SurfaceView implements Runnable {
                     if (btnFeature1.isLive()) {
                         canvas.drawBitmap(btnFeature1.getBitmap(), null, btnFeature1.getDstRectF(), null);
                     }
-                    if (btnFeature2.isLive()) {
-                        canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
-                    }
-                    if (rocket.isLive()) {
+//                    if (btnFeature2.isLive()) {
+//                        canvas.drawBitmap(btnFeature2.getBitmap(), null, btnFeature2.getDstRectF(), null);
+//                    }
+                    if (rocket.isLive() && rocket.getY() != 0) {
                         canvas.drawBitmap(rocket.getBitmap(), null, rocket.getDstRectF(), null);
                     }
                     if (rocketEnemy != null) {
@@ -438,10 +440,61 @@ public class GameView extends SurfaceView implements Runnable {
                 if (btnFeature1.checkIsCollitionPoint(x, y) && btnFeature1.isLive()) {
                     btnFeature1.setLive(false);
                     fireWall = true;
+                    if (play == "host"){
+                        hostSwitchFireWall = true;
+                        clientSwitchFireWall = false;
+                    }
+                    if (play == "client"){
+                        hostSwitchFireWall = false;
+                        clientSwitchFireWall = true;
+                    }
                 }
                 if (fireWall == true){
-                    changBackground = true;
-                    TurnOnFireWall(changBackground);
+
+                    if (!rocketEnemy.isLive() && (hostSwitchFireWall == true || clientSwitchFireWall == true)){
+                        fireWall = false;
+                        changBackground = false;
+                        TurnOnFireWall(changBackground);
+                        if (play == "host"){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                        if (play == "client"){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                    }
+                    else if (!rocket.isLive() && hostSwitchFireWall == false && clientSwitchFireWall == false){
+                        fireWall = false;
+                        changBackground = false;
+                        TurnOnFireWall(changBackground);
+                        if (play == "host" && hostSwitchFireWall == true){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                        if (play == "client" && clientSwitchFireWall == true){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                    }
+                    else if (!rocketEnemy.isLive() && hostSwitchFireWall == false && clientSwitchFireWall == false){
+                        fireWall = false;
+                        changBackground = false;
+                        TurnOnFireWall(changBackground);
+                        if (play == "host" && hostSwitchFireWall == true){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                        if (play == "client" && clientSwitchFireWall == true){
+                            hostSwitchFireWall = false;
+                            clientSwitchFireWall = false;
+                        }
+                    }
+
+                    else if (fireWall == true){
+                        changBackground = true;
+                        TurnOnFireWall(changBackground);
+                    }
                 }
                 if (btnFeature2.checkIsCollitionPoint(x, y) && btnFeature2.isLive()) {
                     btnFeature2.setLive(false);
@@ -460,7 +513,7 @@ public class GameView extends SurfaceView implements Runnable {
                         rocket.setyDead(YDes);
                         //System.out.println(YDes);
                     }
-                    if (y >= YDes && y != 0.0f) {
+                    if (y >= YDes && y != 0.0f && y > heightScreen / 2.0f) {
 //                        drawRocket(x, y);
 //                        for (GameObject ship : arrayShip){
 //                            if (rocket.checkIsCollition(ship)){
@@ -547,7 +600,7 @@ public class GameView extends SurfaceView implements Runnable {
                         break;
                     }
                     if (event.getAction() == MotionEvent.ACTION_MOVE && checkDrag && (stepGame == 1 || stepGame == 2)
-                            && shipp != null && shipp.isCheckLock() == false) {
+                            && shipp != null && shipp.isCheckLock() == false && event.getY() > heightScreen / 2.0f + 50) {
                         System.out.println("ACTION_MOVE");
                         shipp.setX(event.getX());
                         shipp.setY(event.getY());
@@ -591,8 +644,13 @@ public class GameView extends SurfaceView implements Runnable {
     private void TurnOnFireWall(boolean valueFireWall) {
         if (valueFireWall) {
             backgroundGame.setBitmap(background2);
-            if(btnFeature1.isLive())
+            if(!hostSwitchFireWall && !clientSwitchFireWall)
+            {
                 rocket.setyDead(this.heightScreen / 2);
+            }
+            if (!btnFeature1.isLive()){
+                btnFeature1.setCheckLock(true);
+            }
         } else {
             backgroundGame.setBitmap(background);
         }
