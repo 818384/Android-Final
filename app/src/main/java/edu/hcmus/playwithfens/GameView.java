@@ -502,11 +502,13 @@ public class GameView extends SurfaceView implements Runnable {
                         sound = false;
                         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundoff);
                         btnFeature2.setBitmap(feature2);
+                        x = rocket.getX();
                     }
                     else{
                         sound = true;
                         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
                         btnFeature2.setBitmap(feature2);
+                        x = rocket.getX();
                     }
                 }
                 if (rocket.isLive() && !rocket.isCheckLock()) {

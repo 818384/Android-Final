@@ -43,7 +43,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (mManager != null) {
 
                 if (ActivityCompat.checkSelfPermission(mActivity.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(context, "okie", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "okie", Toast.LENGTH_SHORT).show();
                     checkSend = true;
                     mManager.requestPeers(mChannel, gameView.peerListListener);
                 } else {
@@ -90,7 +90,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // do something.
-            Toast.makeText(context, "WIFI_P2P_THIS_DEVICE_CHANGED_ACTION" + action, Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "WIFI_P2P_THIS_DEVICE_CHANGED_ACTION" + action, Toast.LENGTH_LONG).show();
         }
     }
 
