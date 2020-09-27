@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -111,7 +113,9 @@ public class GameView extends SurfaceView implements Runnable {
     private ServerClass serverClass;
     private ClientClass clientClass;
     private SendReceive sendReceive;
-
+    private SoundPool soundPool;
+    private int hitSoundId;
+    private int firingSoundId;
 
     public GameView(Context context, MainActivity activity) {
         super(activity);
@@ -125,11 +129,15 @@ public class GameView extends SurfaceView implements Runnable {
         this.widthScreen = displayMetrics.widthPixels;
         this.heightScreen = displayMetrics.heightPixels;
 
+        soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
+        hitSoundId = soundPool.load(getContext(), R.raw.explosion, 1);
+        firingSoundId = soundPool.load(getContext(), R.raw.missle_fire, 1);
         // Khởi tạo màn hình tìm kiếm đối thủ.
         exqListener();
         discovery = getBitmapFromSvg(getContext(), R.drawable.btn_discover);
 //        discovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discover, option);
-        discoveryStart = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoverystart, option);
+        discoveryStart = discovery;
+//        discoveryStart = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoverystart, option);
         discoveryFailed = BitmapFactory.decodeResource(getResources(), R.drawable.btn_discoveryfailed, option);
         System.out.println(this.widthScreen + " - " + this.heightScreen);
         btnDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 15, discovery);
@@ -159,7 +167,8 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
 //        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen - 60, this.heightScreen / 20, feature2);
-        Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
+        Bitmap homeDiscovery = getBitmapFromSvg(getContext(), R.drawable.btn_homediscovery);
+//        Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
         btnHomeDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 2, homeDiscovery);
         btnHomeDiscovery.setLive(false);
         // Sắp 4 tàu ngẫu nhiên
@@ -502,14 +511,13 @@ public class GameView extends SurfaceView implements Runnable {
                         sound = false;
                         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundoff);
                         btnFeature2.setBitmap(feature2);
-                        x = rocket.getX();
                     }
                     else{
                         sound = true;
                         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
                         btnFeature2.setBitmap(feature2);
-                        x = rocket.getX();
                     }
+                    x = rocket.getX();
                 }
                 if (rocket.isLive() && !rocket.isCheckLock()) {
 //                    rocket.setX(x);
@@ -537,6 +545,9 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 } else {
                     /*if (serverClass != null && hostPlay)*/
+                    if(sound){
+                        soundPool.play(firingSoundId, 1, 1, 0, 0, 1);
+                    }
                     rocket.run();
 //                    if (clientClass != null && clientPlay)
 //                        rocket.run();
@@ -544,6 +555,9 @@ public class GameView extends SurfaceView implements Runnable {
                         if (rocket.isLive() && ship.isLive()){
                             if (rocket.checkIsCollition(ship) && rocket.getY() >= YDes - 10 && rocket.getY() <= YDes + 10) {
                                 System.out.println("VA CHAM");
+                                if(sound){
+                                    soundPool.play(hitSoundId, 1, 1, 0, 0, 1);
+                                }
                                 rocket.setLive(false);
                                 ship.setLive(false);
                                 shipEnemyLive--;
