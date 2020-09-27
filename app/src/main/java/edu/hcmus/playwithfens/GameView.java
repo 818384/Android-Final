@@ -109,6 +109,7 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean hostSwitchFireWall = false;
     private boolean clientSwitchFireWall = false;
     private boolean sound = true;
+    private boolean soundRocketStart = true;
 
     private ServerClass serverClass;
     private ClientClass clientClass;
@@ -146,8 +147,10 @@ public class GameView extends SurfaceView implements Runnable {
         // Khởi tạo màn khởi đầu.
         background = BitmapFactory.decodeResource(getResources(), R.drawable.bg_final, option);
         background2 = BitmapFactory.decodeResource(getResources(), R.drawable.bg_firewall, option);
-        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.bg_win, option);
-        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.bg_lose, option);
+        backgroundWinner = background2;
+//        backgroundWinner = BitmapFactory.decodeResource(getResources(), R.drawable.winner, option);
+        backgroundLoser = background2;
+//        backgroundLoser = BitmapFactory.decodeResource(getResources(), R.drawable.loser, option);
         backgroundGame = new GameObject(0, 0, background);
 
         // Rocket.
@@ -165,7 +168,7 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
 //        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen - 60, this.heightScreen / 20, feature2);
-        Bitmap homeDiscovery = getBitmapFromSvg(getContext(), R.drawable.btn_homediscovery);
+        Bitmap homeDiscovery = getBitmapFromSvg(getContext(), R.drawable.btn_home);
 //        Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
         btnHomeDiscovery = new GameObject(this.widthScreen / 2, this.heightScreen / 2, homeDiscovery);
         btnHomeDiscovery.setLive(false);
@@ -515,7 +518,7 @@ public class GameView extends SurfaceView implements Runnable {
                         Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
                         btnFeature2.setBitmap(feature2);
                     }
-                    x = rocket.getX();
+                    x = rocket.getX()-1000.0f;
                 }
                 if (rocket.isLive() && !rocket.isCheckLock()) {
 //                    rocket.setX(x);
@@ -526,6 +529,7 @@ public class GameView extends SurfaceView implements Runnable {
                         YDes = y;
                         YDes = getYOfPointSymmetry(YDes);
                         rocket.setyDead(YDes);
+
                         //System.out.println(YDes);
                     }
                     if (y >= YDes && y != 0.0f && y > heightScreen / 2.0f) {
@@ -543,10 +547,14 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 } else {
                     /*if (serverClass != null && hostPlay)*/
-                    if(sound){
-                        soundPool.play(firingSoundId, 1, 1, 0, 0, 1);
-                    }
+
                     rocket.run();
+                    if (sound && soundRocketStart){
+                        if(sound){
+                            soundPool.play(firingSoundId, 1, 1, 0, 0, 1);
+                        }
+                        soundRocketStart = false;
+                    }
 //                    if (clientClass != null && clientPlay)
 //                        rocket.run();
                     for (GameObject ship : arrayShipEnemy) {
@@ -637,6 +645,7 @@ public class GameView extends SurfaceView implements Runnable {
                             rocket.setLive(true);
                             if (rocket.isCheckLock()) {
                                 rocket.setCheckLock(false);
+                                soundRocketStart = true;
                             }
                         }
 //                        for (GameObject ship : arrayShip) {
