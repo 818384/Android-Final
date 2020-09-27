@@ -156,7 +156,7 @@ public class GameView extends SurfaceView implements Runnable {
         Bitmap feature1 = getBitmapFromSvg(getContext(), R.drawable.btn_firewall);
 //        Bitmap feature1 = BitmapFactory.decodeResource(getResources(), R.drawable.btn_feature1, option);
         btnFeature1 = new GameObject(this.widthScreen / 2.0f, this.heightScreen / 20, feature1);
-        Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_shuffle);
+        Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
 //        Bitmap feature2 = new BitmapFactory().decodeResource(getResources(), R.drawable.btn_feature2, option);
         btnFeature2 = new GameObject(this.widthScreen - 60, this.heightScreen / 20, feature2);
         Bitmap homeDiscovery = BitmapFactory.decodeResource(getResources(), R.drawable.btn_homediscovery, option);
@@ -498,7 +498,16 @@ public class GameView extends SurfaceView implements Runnable {
                     }
                 }
                 if (btnFeature2.checkIsCollitionPoint(x, y) && btnFeature2.isLive()) {
-                    sound = false;
+                    if (sound){
+                        sound = false;
+                        Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundoff);
+                        btnFeature2.setBitmap(feature2);
+                    }
+                    else{
+                        sound = true;
+                        Bitmap feature2 = getBitmapFromSvg(getContext(), R.drawable.btn_soundon);
+                        btnFeature2.setBitmap(feature2);
+                    }
                 }
                 if (rocket.isLive() && !rocket.isCheckLock()) {
 //                    rocket.setX(x);
